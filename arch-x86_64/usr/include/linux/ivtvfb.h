@@ -1,31 +1,38 @@
-/****************************************************************************
- ****************************************************************************
- ***
- ***   This header was automatically generated from a Linux kernel header
- ***   of the same name, to make information necessary for userspace to
- ***   call into the kernel available to libc.  It contains only constants,
- ***   structures, and macros generated from the original header, and thus,
- ***   contains no copyrightable information.
- ***
- ***   To edit the content of this header, modify the corresponding
- ***   source file (e.g. under external/kernel-headers/original/) then
- ***   run bionic/libc/kernel/tools/update_all.py
- ***
- ***   Any manual change here will be lost the next time this script will
- ***   be run. You've been warned!
- ***
- ****************************************************************************
- ****************************************************************************/
+/*
+    On Screen Display cx23415 Framebuffer driver
+
+    Copyright (C) 2006, 2007  Ian Armstrong <ian@iarmst.demon.co.uk>
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
 #ifndef __LINUX_IVTVFB_H__
 #define __LINUX_IVTVFB_H__
-#include <linux/compiler.h>
+
+
 #include <linux/types.h>
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+
+/* Framebuffer external API */
+
 struct ivtvfb_dma_frame {
- void __user *source;
- unsigned long dest_offset;
- int count;
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+	void *source;
+	unsigned long dest_offset;
+	int count;
 };
-#define IVTVFB_IOC_DMA_FRAME _IOW('V', BASE_VIDIOC_PRIVATE+0, struct ivtvfb_dma_frame)
+
+#define IVTVFB_IOC_DMA_FRAME 	_IOW('V', BASE_VIDIOC_PRIVATE+0, struct ivtvfb_dma_frame)
+#define FBIO_WAITFORVSYNC	_IOW('F', 0x20, __u32)
+
 #endif

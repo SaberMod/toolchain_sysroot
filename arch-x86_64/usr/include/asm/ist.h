@@ -1,30 +1,29 @@
-/****************************************************************************
- ****************************************************************************
- ***
- ***   This header was automatically generated from a Linux kernel header
- ***   of the same name, to make information necessary for userspace to
- ***   call into the kernel available to libc.  It contains only constants,
- ***   structures, and macros generated from the original header, and thus,
- ***   contains no copyrightable information.
- ***
- ***   To edit the content of this header, modify the corresponding
- ***   source file (e.g. under external/kernel-headers/original/) then
- ***   run bionic/libc/kernel/tools/update_all.py
- ***
- ***   Any manual change here will be lost the next time this script will
- ***   be run. You've been warned!
- ***
- ****************************************************************************
- ****************************************************************************/
-#ifndef _UAPI_ASM_X86_IST_H
-#define _UAPI_ASM_X86_IST_H
+#ifndef _ASM_X86_IST_H
+#define _ASM_X86_IST_H
+
+/*
+ * Include file for the interface to IST BIOS
+ * Copyright 2002 Andy Grover <andrew.grover@intel.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ */
+
+
 #include <linux/types.h>
+
 struct ist_info {
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- __u32 signature;
- __u32 command;
- __u32 event;
- __u32 perf_level;
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+	__u32 signature;
+	__u32 command;
+	__u32 event;
+	__u32 perf_level;
 };
-#endif
+
+#endif /* _ASM_X86_IST_H */

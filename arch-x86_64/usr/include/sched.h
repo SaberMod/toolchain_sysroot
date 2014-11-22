@@ -1,153 +1,120 @@
-/*
- * Copyright (C) 2008 The Android Open Source Project
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *  * Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- *  * Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
- * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- */
-#ifndef _SCHED_H_
-#define _SCHED_H_
+/* Definitions for POSIX 1003.1b-1993 (aka POSIX.4) scheduling interface.
+   Copyright (C) 1996,1997,1999,2001-2004,2007 Free Software Foundation, Inc.
+   This file is part of the GNU C Library.
 
-#include <sys/cdefs.h>
-#include <sys/time.h>
+   The GNU C Library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
 
-#include <linux/sched.h>
+   The GNU C Library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with the GNU C Library; if not, write to the Free
+   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+   02111-1307 USA.  */
+
+#ifndef	_SCHED_H
+#define	_SCHED_H	1
+
+#include <features.h>
+
+/* Get type definitions.  */
+#include <bits/types.h>
+
+#define __need_size_t
+#include <stddef.h>
+
+#define __need_timespec
+#include <time.h>
+
+/* Get system specific constant and data structure definitions.  */
+#include <bits/sched.h>
+/* Define the real names for the elements of `struct sched_param'.  */
+#define sched_priority	__sched_priority
+
 
 __BEGIN_DECLS
 
-/* This name is used by glibc, but not by the kernel. */
-#define SCHED_OTHER SCHED_NORMAL
+/* Set scheduling parameters for a process.  */
+extern int sched_setparam (__pid_t __pid, __const struct sched_param *__param)
+     __THROW;
 
-struct sched_param {
-  int __sched_priority;
-};
-#define sched_priority __sched_priority
+/* Retrieve scheduling parameters for a particular process.  */
+extern int sched_getparam (__pid_t __pid, struct sched_param *__param) __THROW;
 
-extern int sched_setscheduler(pid_t, int, const struct sched_param*);
-extern int sched_getscheduler(pid_t);
-extern int sched_yield(void);
-extern int sched_get_priority_max(int);
-extern int sched_get_priority_min(int);
-extern int sched_setparam(pid_t, const struct sched_param*);
-extern int sched_getparam(pid_t, struct sched_param*);
-extern int sched_rr_get_interval(pid_t, struct timespec*);
+/* Set scheduling algorithm and/or parameters for a process.  */
+extern int sched_setscheduler (__pid_t __pid, int __policy,
+			       __const struct sched_param *__param) __THROW;
 
-#ifdef _GNU_SOURCE
+/* Retrieve scheduling algorithm for a particular purpose.  */
+extern int sched_getscheduler (__pid_t __pid) __THROW;
 
-extern int clone(int (*)(void*), void*, int, void*, ...);
-extern int unshare(int);
-extern int sched_getcpu(void);
-extern int setns(int, int);
+/* Yield the processor.  */
+extern int sched_yield (void) __THROW;
 
-#ifdef __LP64__
-#define CPU_SETSIZE 1024
-#else
-#define CPU_SETSIZE 32
+/* Get maximum priority value for a scheduler.  */
+extern int sched_get_priority_max (int __algorithm) __THROW;
+
+/* Get minimum priority value for a scheduler.  */
+extern int sched_get_priority_min (int __algorithm) __THROW;
+
+/* Get the SCHED_RR interval for the named process.  */
+extern int sched_rr_get_interval (__pid_t __pid, struct timespec *__t) __THROW;
+
+
+#ifdef __USE_GNU
+/* Access macros for `cpu_set'.  */
+# define CPU_SETSIZE __CPU_SETSIZE
+# define CPU_SET(cpu, cpusetp)	 __CPU_SET_S (cpu, sizeof (cpu_set_t), cpusetp)
+# define CPU_CLR(cpu, cpusetp)	 __CPU_CLR_S (cpu, sizeof (cpu_set_t), cpusetp)
+# define CPU_ISSET(cpu, cpusetp) __CPU_ISSET_S (cpu, sizeof (cpu_set_t), \
+						cpusetp)
+# define CPU_ZERO(cpusetp)	 __CPU_ZERO_S (sizeof (cpu_set_t), cpusetp)
+# define CPU_COUNT(cpusetp)	 __CPU_COUNT_S (sizeof (cpu_set_t), cpusetp)
+
+# define CPU_SET_S(cpu, setsize, cpusetp)   __CPU_SET_S (cpu, setsize, cpusetp)
+# define CPU_CLR_S(cpu, setsize, cpusetp)   __CPU_CLR_S (cpu, setsize, cpusetp)
+# define CPU_ISSET_S(cpu, setsize, cpusetp) __CPU_ISSET_S (cpu, setsize, \
+							   cpusetp)
+# define CPU_ZERO_S(setsize, cpusetp)	    __CPU_ZERO_S (setsize, cpusetp)
+# define CPU_COUNT_S(setsize, cpusetp)	    __CPU_COUNT_S (setsize, cpusetp)
+
+# define CPU_EQUAL(cpusetp1, cpusetp2) \
+  __CPU_EQUAL_S (sizeof (cpu_set_t), cpusetp1, cpusetp2)
+# define CPU_EQUAL_S(setsize, cpusetp1, cpusetp2) \
+  __CPU_EQUAL_S (setsize, cpusetp1, cpusetp2)
+
+# define CPU_AND(destset, srcset1, srcset2) \
+  __CPU_OP_S (sizeof (cpu_set_t), destset, srcset1, srcset2, &)
+# define CPU_OR(destset, srcset1, srcset2) \
+  __CPU_OP_S (sizeof (cpu_set_t), destset, srcset1, srcset2, |)
+# define CPU_XOR(destset, srcset1, srcset2) \
+  __CPU_OP_S (sizeof (cpu_set_t), destset, srcset1, srcset2, ^)
+# define CPU_AND_S(setsize, destset, srcset1, srcset2) \
+  __CPU_OP_S (setsize, destset, srcset1, srcset2, &)
+# define CPU_OR_S(setsize, destset, srcset1, srcset2) \
+  __CPU_OP_S (setsize, destset, srcset1, srcset2, |)
+# define CPU_XOR_S(setsize, destset, srcset1, srcset2) \
+  __CPU_OP_S (setsize, destset, srcset1, srcset2, ^)
+
+# define CPU_ALLOC_SIZE(count) __CPU_ALLOC_SIZE (count)
+# define CPU_ALLOC(count) __CPU_ALLOC (count)
+# define CPU_FREE(cpuset) __CPU_FREE (cpuset)
+
+
+/* Set the CPU affinity for a task */
+extern int sched_setaffinity (__pid_t __pid, size_t __cpusetsize,
+			      __const cpu_set_t *__cpuset) __THROW;
+
+/* Get the CPU affinity for a task */
+extern int sched_getaffinity (__pid_t __pid, size_t __cpusetsize,
+			      cpu_set_t *__cpuset) __THROW;
 #endif
-
-#define __CPU_BITTYPE  unsigned long int  /* mandated by the kernel  */
-#define __CPU_BITS     (8 * sizeof(__CPU_BITTYPE))
-#define __CPU_ELT(x)   ((x) / __CPU_BITS)
-#define __CPU_MASK(x)  ((__CPU_BITTYPE)1 << ((x) & (__CPU_BITS - 1)))
-
-typedef struct {
-  __CPU_BITTYPE  __bits[ CPU_SETSIZE / __CPU_BITS ];
-} cpu_set_t;
-
-extern int sched_setaffinity(pid_t pid, size_t setsize, const cpu_set_t* set);
-
-extern int sched_getaffinity(pid_t pid, size_t setsize, cpu_set_t* set);
-
-#define CPU_ZERO(set)          CPU_ZERO_S(sizeof(cpu_set_t), set)
-#define CPU_SET(cpu, set)      CPU_SET_S(cpu, sizeof(cpu_set_t), set)
-#define CPU_CLR(cpu, set)      CPU_CLR_S(cpu, sizeof(cpu_set_t), set)
-#define CPU_ISSET(cpu, set)    CPU_ISSET_S(cpu, sizeof(cpu_set_t), set)
-#define CPU_COUNT(set)         CPU_COUNT_S(sizeof(cpu_set_t), set)
-#define CPU_EQUAL(set1, set2)  CPU_EQUAL_S(sizeof(cpu_set_t), set1, set2)
-
-#define CPU_AND(dst, set1, set2)  __CPU_OP(dst, set1, set2, &)
-#define CPU_OR(dst, set1, set2)   __CPU_OP(dst, set1, set2, |)
-#define CPU_XOR(dst, set1, set2)  __CPU_OP(dst, set1, set2, ^)
-
-#define __CPU_OP(dst, set1, set2, op)  __CPU_OP_S(sizeof(cpu_set_t), dst, set1, set2, op)
-
-/* Support for dynamically-allocated cpu_set_t */
-
-#define CPU_ALLOC_SIZE(count) \
-  __CPU_ELT((count) + (__CPU_BITS - 1)) * sizeof(__CPU_BITTYPE)
-
-#define CPU_ALLOC(count)  __sched_cpualloc((count))
-#define CPU_FREE(set)     __sched_cpufree((set))
-
-extern cpu_set_t* __sched_cpualloc(size_t count);
-extern void       __sched_cpufree(cpu_set_t* set);
-
-#define CPU_ZERO_S(setsize, set)  __builtin_memset(set, 0, setsize)
-
-#define CPU_SET_S(cpu, setsize, set) \
-  do { \
-    size_t __cpu = (cpu); \
-    if (__cpu < 8 * (setsize)) \
-      (set)->__bits[__CPU_ELT(__cpu)] |= __CPU_MASK(__cpu); \
-  } while (0)
-
-#define CPU_CLR_S(cpu, setsize, set) \
-  do { \
-    size_t __cpu = (cpu); \
-    if (__cpu < 8 * (setsize)) \
-      (set)->__bits[__CPU_ELT(__cpu)] &= ~__CPU_MASK(__cpu); \
-  } while (0)
-
-#define CPU_ISSET_S(cpu, setsize, set) \
-  (__extension__ ({ \
-    size_t __cpu = (cpu); \
-    (__cpu < 8 * (setsize)) \
-      ? ((set)->__bits[__CPU_ELT(__cpu)] & __CPU_MASK(__cpu)) != 0 \
-      : 0; \
-  }))
-
-#define CPU_EQUAL_S(setsize, set1, set2)  (__builtin_memcmp(set1, set2, setsize) == 0)
-
-#define CPU_AND_S(setsize, dst, set1, set2)  __CPU_OP_S(setsize, dst, set1, set2, &)
-#define CPU_OR_S(setsize, dst, set1, set2)   __CPU_OP_S(setsize, dst, set1, set2, |)
-#define CPU_XOR_S(setsize, dst, set1, set2)  __CPU_OP_S(setsize, dst, set1, set2, ^)
-
-#define __CPU_OP_S(setsize, dstset, srcset1, srcset2, op) \
-  do { \
-    cpu_set_t* __dst = (dstset); \
-    const __CPU_BITTYPE* __src1 = (srcset1)->__bits; \
-    const __CPU_BITTYPE* __src2 = (srcset2)->__bits; \
-    size_t __nn = 0, __nn_max = (setsize)/sizeof(__CPU_BITTYPE); \
-    for (; __nn < __nn_max; __nn++) \
-      (__dst)->__bits[__nn] = __src1[__nn] op __src2[__nn]; \
-  } while (0)
-
-#define CPU_COUNT_S(setsize, set)  __sched_cpucount((setsize), (set))
-
-extern int __sched_cpucount(size_t setsize, cpu_set_t* set);
-
-#endif /* _GNU_SOURCE */
 
 __END_DECLS
 
-#endif /* _SCHED_H_ */
+#endif /* sched.h */

@@ -1,48 +1,40 @@
-/*
- * Copyright (C) 2008 The Android Open Source Project
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *  * Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- *  * Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
- * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- */
-#ifndef _LIBGEN_H
-#define _LIBGEN_H
+/* Copyright (C) 1996, 1997, 1999, 2000 Free Software Foundation, Inc.
+   This file is part of the GNU C Library.
 
-#include <sys/cdefs.h>
-#include <sys/types.h>
+   The GNU C Library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
+
+   The GNU C Library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with the GNU C Library; if not, write to the Free
+   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+   02111-1307 USA.  */
+
+#ifndef _LIBGEN_H
+#define _LIBGEN_H	1
+
+#include <features.h>
 
 __BEGIN_DECLS
 
-/* On Android these don't modify their input, and use thread-local storage for their results. */
-extern char* basename(const char*);
-extern char* dirname(const char*);
+/* Return directory part of PATH or "." if none is available.  */
+extern char *dirname (char *__path) __THROW;
 
-#if !defined(__LP64__)
-/* These non-standard functions are not needed on Android; basename and dirname use thread-local storage. */
-extern int dirname_r(const char*, char*, size_t);
-extern int basename_r(const char*, char*, size_t);
-#endif
+/* Return final component of PATH.
+
+   This is the weird XPG version of this function.  It sometimes will
+   modify its argument.  Therefore we normally use the GNU version (in
+   <string.h>) and only if this header is included make the XPG
+   version available under the real name.  */
+extern char *__xpg_basename (char *__path) __THROW;
+#define basename	__xpg_basename
 
 __END_DECLS
 
-#endif /* _LIBGEN_H */
+#endif /* libgen.h */

@@ -1,35 +1,21 @@
-/****************************************************************************
- ****************************************************************************
- ***
- ***   This header was automatically generated from a Linux kernel header
- ***   of the same name, to make information necessary for userspace to
- ***   call into the kernel available to libc.  It contains only constants,
- ***   structures, and macros generated from the original header, and thus,
- ***   contains no copyrightable information.
- ***
- ***   To edit the content of this header, modify the corresponding
- ***   source file (e.g. under external/kernel-headers/original/) then
- ***   run bionic/libc/kernel/tools/update_all.py
- ***
- ***   Any manual change here will be lost the next time this script will
- ***   be run. You've been warned!
- ***
- ****************************************************************************
- ****************************************************************************/
+/* IP tables module for matching the value of the TTL
+ * (C) 2000 by Harald Welte <laforge@gnumonks.org> */
+
 #ifndef _IPT_TTL_H
 #define _IPT_TTL_H
-#include <linux/types.h>
+
 enum {
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- IPT_TTL_EQ = 0,
- IPT_TTL_NE,
- IPT_TTL_LT,
- IPT_TTL_GT,
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+	IPT_TTL_EQ = 0,		/* equals */
+	IPT_TTL_NE,		/* not equals */
+	IPT_TTL_LT,		/* less than */
+	IPT_TTL_GT,		/* greater than */
 };
+
+
 struct ipt_ttl_info {
- __u8 mode;
- __u8 ttl;
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+	u_int8_t	mode;
+	u_int8_t	ttl;
 };
+
+
 #endif

@@ -1,62 +1,122 @@
-/*	$OpenBSD: setjmp.h,v 1.5 2005/12/13 00:35:22 millert Exp $	*/
-/*	$NetBSD: setjmp.h,v 1.11 1994/12/20 10:35:44 cgd Exp $	*/
+/* Copyright (C) 1991-1999,2001,2002,2007,2009 Free Software Foundation, Inc.
+   This file is part of the GNU C Library.
 
-/*-
- * Copyright (c) 1990, 1993
- *	The Regents of the University of California.  All rights reserved.
- * (c) UNIX System Laboratories, Inc.
- * All or some portions of this file are derived from material licensed
- * to the University of California by American Telephone and Telegraph
- * Co. or Unix System Laboratories, Inc. and are reproduced herein with
- * the permission of UNIX System Laboratories, Inc.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the University nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- *
- *	@(#)setjmp.h	8.2 (Berkeley) 1/21/94
+   The GNU C Library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
+
+   The GNU C Library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with the GNU C Library; if not, write to the Free
+   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+   02111-1307 USA.  */
+
+/*
+ *	ISO C99 Standard: 7.13 Nonlocal jumps	<setjmp.h>
  */
 
-#ifndef _SETJMP_H_
-#define _SETJMP_H_
+#ifndef	_SETJMP_H
+#define	_SETJMP_H	1
 
-#include <sys/cdefs.h>
-#include <machine/setjmp.h>
-
-typedef long sigjmp_buf[_JBLEN + 1];
-typedef long jmp_buf[_JBLEN];
+#include <features.h>
 
 __BEGIN_DECLS
 
-int     _setjmp(jmp_buf);
-void    _longjmp(jmp_buf, int);
+#include <bits/setjmp.h>		/* Get `__jmp_buf'.  */
+#include <bits/sigset.h>		/* Get `__sigset_t'.  */
 
-int     setjmp(jmp_buf);
-void    longjmp(jmp_buf, int);
 
-int     sigsetjmp(sigjmp_buf, int);
-void    siglongjmp(sigjmp_buf, int);
+/* Calling environment, plus possibly a saved signal mask.  */
+struct __jmp_buf_tag
+  {
+    /* NOTE: The machine-dependent definitions of `__sigsetjmp'
+       assume that a `jmp_buf' begins with a `__jmp_buf' and that
+       `__mask_was_saved' follows it.  Do not move these members
+       or add others before it.  */
+    __jmp_buf __jmpbuf;		/* Calling environment.  */
+    int __mask_was_saved;	/* Saved the signal mask?  */
+    __sigset_t __saved_mask;	/* Saved signal mask.  */
+  };
+
+
+__BEGIN_NAMESPACE_STD
+
+typedef struct __jmp_buf_tag jmp_buf[1];
+
+/* Store the calling environment in ENV, also saving the signal mask.
+   Return 0.  */
+extern int setjmp (jmp_buf __env) __THROW;
+
+__END_NAMESPACE_STD
+
+/* Store the calling environment in ENV, also saving the
+   signal mask if SAVEMASK is nonzero.  Return 0.
+   This is the internal name for `sigsetjmp'.  */
+extern int __sigsetjmp (struct __jmp_buf_tag __env[1], int __savemask) __THROW;
+
+#ifndef	__FAVOR_BSD
+/* Store the calling environment in ENV, not saving the signal mask.
+   Return 0.  */
+extern int _setjmp (struct __jmp_buf_tag __env[1]) __THROW;
+
+/* Do not save the signal mask.  This is equivalent to the `_setjmp'
+   BSD function.  */
+# define setjmp(env)	_setjmp (env)
+#else
+/* We are in 4.3 BSD-compatibility mode in which `setjmp'
+   saves the signal mask like `sigsetjmp (ENV, 1)'.  We have to
+   define a macro since ISO C says `setjmp' is one.  */
+# define setjmp(env)	setjmp (env)
+#endif /* Favor BSD.  */
+
+
+__BEGIN_NAMESPACE_STD
+
+/* Jump to the environment saved in ENV, making the
+   `setjmp' call there return VAL, or 1 if VAL is 0.  */
+extern void longjmp (struct __jmp_buf_tag __env[1], int __val)
+     __THROW __attribute__ ((__noreturn__));
+
+__END_NAMESPACE_STD
+
+#if defined __USE_BSD || defined __USE_XOPEN
+/* Same.  Usually `_longjmp' is used with `_setjmp', which does not save
+   the signal mask.  But it is how ENV was saved that determines whether
+   `longjmp' restores the mask; `_longjmp' is just an alias.  */
+extern void _longjmp (struct __jmp_buf_tag __env[1], int __val)
+     __THROW __attribute__ ((__noreturn__));
+#endif
+
+
+#ifdef	__USE_POSIX
+/* Use the same type for `jmp_buf' and `sigjmp_buf'.
+   The `__mask_was_saved' flag determines whether
+   or not `longjmp' will restore the signal mask.  */
+typedef struct __jmp_buf_tag sigjmp_buf[1];
+
+/* Store the calling environment in ENV, also saving the
+   signal mask if SAVEMASK is nonzero.  Return 0.  */
+# define sigsetjmp(env, savemask)	__sigsetjmp (env, savemask)
+
+/* Jump to the environment saved in ENV, making the
+   sigsetjmp call there return VAL, or 1 if VAL is 0.
+   Restore the signal mask if that sigsetjmp call saved it.
+   This is just an alias `longjmp'.  */
+extern void siglongjmp (sigjmp_buf __env, int __val)
+     __THROW __attribute__ ((__noreturn__));
+#endif /* Use POSIX.  */
+
+
+/* Define helper functions to catch unsafe code.  */
+#if __USE_FORTIFY_LEVEL > 0
+# include <bits/setjmp2.h>
+#endif
 
 __END_DECLS
 
-#endif /* !_SETJMP_H_ */
+#endif /* setjmp.h  */

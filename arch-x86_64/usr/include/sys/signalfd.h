@@ -1,42 +1,66 @@
-/*
- * Copyright (C) 2013 The Android Open Source Project
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *  * Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- *  * Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
- * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- */
+/* Copyright (C) 2007, 2008 Free Software Foundation, Inc.
+   This file is part of the GNU C Library.
 
-#ifndef _SYS_SIGNALFD_H_
-#define _SYS_SIGNALFD_H_
+   The GNU C Library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
 
-#include <linux/signalfd.h>
+   The GNU C Library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with the GNU C Library; if not, write to the Free
+   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+   02111-1307 USA.  */
+
+#ifndef	_SYS_SIGNALFD_H
+#define	_SYS_SIGNALFD_H	1
+
+#define __need_sigset_t
 #include <signal.h>
-#include <sys/cdefs.h>
+#include <stdint.h>
+
+
+struct signalfd_siginfo
+{
+  uint32_t ssi_signo;
+  int32_t ssi_errno;
+  int32_t ssi_code;
+  uint32_t ssi_pid;
+  uint32_t ssi_uid;
+  int32_t ssi_fd;
+  uint32_t ssi_tid;
+  uint32_t ssi_band;
+  uint32_t ssi_overrun;
+  uint32_t ssi_trapno;
+  int32_t ssi_status;
+  int32_t ssi_int;
+  uint64_t ssi_ptr;
+  uint64_t ssi_utime;
+  uint64_t ssi_stime;
+  uint64_t ssi_addr;
+  uint8_t __pad[48];
+};
+
+/* Flags for signalfd.  */
+enum
+  {
+    SFD_CLOEXEC = 02000000,
+#define SFD_CLOEXEC SFD_CLOEXEC
+    SFD_NONBLOCK = 04000
+#define SFD_NONBLOCK SFD_NONBLOCK
+  };
 
 __BEGIN_DECLS
 
-extern int signalfd(int fd, const sigset_t* mask, int flags) __nonnull((2));
+/* Request notification for delivery of signals in MASK to be
+   performed using descriptor FD.*/
+extern int signalfd (int __fd, const sigset_t *__mask, int __flags)
+  __THROW __nonnull ((2));
 
 __END_DECLS
 
-#endif /* _SYS_SIGNALFD_H */
+#endif /* sys/signalfd.h */

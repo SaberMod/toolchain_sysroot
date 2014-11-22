@@ -1,71 +1,136 @@
-/*  $OpenBSD: fenv.h,v 1.2 2011/05/25 21:46:49 martynas Exp $ */
-/*  $NetBSD: fenv.h,v 1.2.4.1 2011/02/08 16:18:55 bouyer Exp $  */
+/* Copyright (C) 1997, 1999, 2000 Free Software Foundation, Inc.
+   This file is part of the GNU C Library.
+
+   The GNU C Library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
+
+   The GNU C Library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with the GNU C Library; if not, write to the Free
+   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+   02111-1307 USA.  */
 
 /*
- * Copyright (c) 2010 The NetBSD Foundation, Inc.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
- * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
- * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE FOUNDATION OR CONTRIBUTORS
- * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * ISO C99 7.6: Floating-point environment	<fenv.h>
  */
 
-#ifndef _FENV_H_
-#define _FENV_H_
+#ifndef _FENV_H
+#define _FENV_H	1
 
-#include <sys/cdefs.h>
-#include <machine/fenv.h>
+#include <features.h>
+
+/* Get the architecture dependend definitions.  The following definitions
+   are expected to be done:
+
+   fenv_t	type for object representing an entire floating-point
+		environment
+
+   FE_DFL_ENV	macro of type pointer to fenv_t to be used as the argument
+		to functions taking an argument of type fenv_t; in this
+		case the default environment will be used
+
+   fexcept_t	type for object representing the floating-point exception
+		flags including status associated with the flags
+
+   The following macros are defined iff the implementation supports this
+   kind of exception.
+   FE_INEXACT		inexact result
+   FE_DIVBYZERO		division by zero
+   FE_UNDERFLOW		result not representable due to underflow
+   FE_OVERFLOW		result not representable due to overflow
+   FE_INVALID		invalid operation
+
+   FE_ALL_EXCEPT	bitwise OR of all supported exceptions
+
+   The next macros are defined iff the appropriate rounding mode is
+   supported by the implementation.
+   FE_TONEAREST		round to nearest
+   FE_UPWARD		round toward +Inf
+   FE_DOWNWARD		round toward -Inf
+   FE_TOWARDZERO	round toward 0
+*/
+#include <bits/fenv.h>
 
 __BEGIN_DECLS
-#pragma GCC visibility push(default)
 
-int feclearexcept(int);
-int fegetexceptflag(fexcept_t *, int);
-int feraiseexcept(int);
-int fesetexceptflag(const fexcept_t *, int);
-int fetestexcept(int);
+/* Floating-point exception handling.  */
 
-int fegetround(void);
-int fesetround(int);
+/* Clear the supported exceptions represented by EXCEPTS.  */
+extern int feclearexcept (int __excepts) __THROW;
 
-int fegetenv(fenv_t *);
-int feholdexcept(fenv_t *);
-int fesetenv(const fenv_t *);
-int feupdateenv(const fenv_t *);
+/* Store implementation-defined representation of the exception flags
+   indicated by EXCEPTS in the object pointed to by FLAGP.  */
+extern int fegetexceptflag (fexcept_t *__flagp, int __excepts) __THROW;
 
-int feenableexcept(int);
-int fedisableexcept(int);
-int fegetexcept(void);
+/* Raise the supported exceptions represented by EXCEPTS.  */
+extern int feraiseexcept (int __excepts) __THROW;
 
-/*
- * The following constant represents the default floating-point environment
- * (that is, the one installed at program startup) and has type pointer to
- * const-qualified fenv_t.
- *
- * It can be used as an argument to the functions that manage the floating-point
- * environment, namely fesetenv() and feupdateenv().
- */
-extern const fenv_t __fe_dfl_env;
-#define FE_DFL_ENV  (&__fe_dfl_env)
+/* Set complete status for exceptions indicated by EXCEPTS according to
+   the representation in the object pointed to by FLAGP.  */
+extern int fesetexceptflag (__const fexcept_t *__flagp, int __excepts) __THROW;
 
-#pragma GCC visibility pop
+/* Determine which of subset of the exceptions specified by EXCEPTS are
+   currently set.  */
+extern int fetestexcept (int __excepts) __THROW;
+
+
+/* Rounding control.  */
+
+/* Get current rounding direction.  */
+extern int fegetround (void) __THROW;
+
+/* Establish the rounding direction represented by ROUND.  */
+extern int fesetround (int __rounding_direction) __THROW;
+
+
+/* Floating-point environment.  */
+
+/* Store the current floating-point environment in the object pointed
+   to by ENVP.  */
+extern int fegetenv (fenv_t *__envp) __THROW;
+
+/* Save the current environment in the object pointed to by ENVP, clear
+   exception flags and install a non-stop mode (if available) for all
+   exceptions.  */
+extern int feholdexcept (fenv_t *__envp) __THROW;
+
+/* Establish the floating-point environment represented by the object
+   pointed to by ENVP.  */
+extern int fesetenv (__const fenv_t *__envp) __THROW;
+
+/* Save current exceptions in temporary storage, install environment
+   represented by object pointed to by ENVP and raise exceptions
+   according to saved exceptions.  */
+extern int feupdateenv (__const fenv_t *__envp) __THROW;
+
+
+/* Include optimization.  */
+#ifdef __OPTIMIZE__
+# include <bits/fenvinline.h>
+#endif
+
+#ifdef __USE_GNU
+
+/* Enable individual exceptions.  Will not enable more exceptions than
+   EXCEPTS specifies.  Returns the previous enabled exceptions if all
+   exceptions are successfully set, otherwise returns -1.  */
+extern int feenableexcept (int __excepts) __THROW;
+
+/* Disable individual exceptions.  Will not disable more exceptions than
+   EXCEPTS specifies.  Returns the previous enabled exceptions if all
+   exceptions are successfully disabled, otherwise returns -1.  */
+extern int fedisableexcept (int __excepts) __THROW;
+
+/* Return enabled exceptions.  */
+extern int fegetexcept (void) __THROW;
+#endif
+
 __END_DECLS
 
-#endif  /* ! _FENV_H_ */
+#endif /* fenv.h */

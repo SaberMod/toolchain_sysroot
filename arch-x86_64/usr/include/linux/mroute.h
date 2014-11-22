@@ -1,121 +1,141 @@
-/****************************************************************************
- ****************************************************************************
- ***
- ***   This header was automatically generated from a Linux kernel header
- ***   of the same name, to make information necessary for userspace to
- ***   call into the kernel available to libc.  It contains only constants,
- ***   structures, and macros generated from the original header, and thus,
- ***   contains no copyrightable information.
- ***
- ***   To edit the content of this header, modify the corresponding
- ***   source file (e.g. under external/kernel-headers/original/) then
- ***   run bionic/libc/kernel/tools/update_all.py
- ***
- ***   Any manual change here will be lost the next time this script will
- ***   be run. You've been warned!
- ***
- ****************************************************************************
- ****************************************************************************/
-#ifndef _UAPI__LINUX_MROUTE_H
-#define _UAPI__LINUX_MROUTE_H
+#ifndef __LINUX_MROUTE_H
+#define __LINUX_MROUTE_H
+
 #include <linux/sockios.h>
 #include <linux/types.h>
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-#define MRT_BASE 200
-#define MRT_INIT (MRT_BASE)
-#define MRT_DONE (MRT_BASE+1)
-#define MRT_ADD_VIF (MRT_BASE+2)
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-#define MRT_DEL_VIF (MRT_BASE+3)
-#define MRT_ADD_MFC (MRT_BASE+4)
-#define MRT_DEL_MFC (MRT_BASE+5)
-#define MRT_VERSION (MRT_BASE+6)
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-#define MRT_ASSERT (MRT_BASE+7)
-#define MRT_PIM (MRT_BASE+8)
-#define MRT_TABLE (MRT_BASE+9)
-#define MRT_ADD_MFC_PROXY (MRT_BASE+10)
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-#define MRT_DEL_MFC_PROXY (MRT_BASE+11)
-#define MRT_MAX (MRT_BASE+11)
-#define SIOCGETVIFCNT SIOCPROTOPRIVATE
-#define SIOCGETSGCNT (SIOCPROTOPRIVATE+1)
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-#define SIOCGETRPF (SIOCPROTOPRIVATE+2)
-#define MAXVIFS 32
-typedef unsigned long vifbitmap_t;
+
+/*
+ *	Based on the MROUTING 3.5 defines primarily to keep
+ *	source compatibility with BSD.
+ *
+ *	See the mrouted code for the original history.
+ *
+ *      Protocol Independent Multicast (PIM) data structures included
+ *      Carlos Picoto (cap@di.fc.ul.pt)
+ *
+ */
+
+#define MRT_BASE	200
+#define MRT_INIT	(MRT_BASE)	/* Activate the kernel mroute code 	*/
+#define MRT_DONE	(MRT_BASE+1)	/* Shutdown the kernel mroute		*/
+#define MRT_ADD_VIF	(MRT_BASE+2)	/* Add a virtual interface		*/
+#define MRT_DEL_VIF	(MRT_BASE+3)	/* Delete a virtual interface		*/
+#define MRT_ADD_MFC	(MRT_BASE+4)	/* Add a multicast forwarding entry	*/
+#define MRT_DEL_MFC	(MRT_BASE+5)	/* Delete a multicast forwarding entry	*/
+#define MRT_VERSION	(MRT_BASE+6)	/* Get the kernel multicast version	*/
+#define MRT_ASSERT	(MRT_BASE+7)	/* Activate PIM assert mode		*/
+#define MRT_PIM		(MRT_BASE+8)	/* enable PIM code	*/
+
+#define SIOCGETVIFCNT	SIOCPROTOPRIVATE	/* IP protocol privates */
+#define SIOCGETSGCNT	(SIOCPROTOPRIVATE+1)
+#define SIOCGETRPF	(SIOCPROTOPRIVATE+2)
+
+#define MAXVIFS		32	
+typedef unsigned long vifbitmap_t;	/* User mode code depends on this lot */
 typedef unsigned short vifi_t;
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-#define ALL_VIFS ((vifi_t)(-1))
-#define VIFM_SET(n,m) ((m)|=(1<<(n)))
-#define VIFM_CLR(n,m) ((m)&=~(1<<(n)))
-#define VIFM_ISSET(n,m) ((m)&(1<<(n)))
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-#define VIFM_CLRALL(m) ((m)=0)
-#define VIFM_COPY(mfrom,mto) ((mto)=(mfrom))
-#define VIFM_SAME(m1,m2) ((m1)==(m2))
+#define ALL_VIFS	((vifi_t)(-1))
+
+/*
+ *	Same idea as select
+ */
+ 
+#define VIFM_SET(n,m)	((m)|=(1<<(n)))
+#define VIFM_CLR(n,m)	((m)&=~(1<<(n)))
+#define VIFM_ISSET(n,m)	((m)&(1<<(n)))
+#define VIFM_CLRALL(m)	((m)=0)
+#define VIFM_COPY(mfrom,mto)	((mto)=(mfrom))
+#define VIFM_SAME(m1,m2)	((m1)==(m2))
+
+/*
+ *	Passed by mrouted for an MRT_ADD_VIF - again we use the
+ *	mrouted 3.6 structures for compatibility
+ */
+ 
 struct vifctl {
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- vifi_t vifc_vifi;
- unsigned char vifc_flags;
- unsigned char vifc_threshold;
- unsigned int vifc_rate_limit;
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- union {
- struct in_addr vifc_lcl_addr;
- int vifc_lcl_ifindex;
- };
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- struct in_addr vifc_rmt_addr;
+	vifi_t	vifc_vifi;		/* Index of VIF */
+	unsigned char vifc_flags;	/* VIFF_ flags */
+	unsigned char vifc_threshold;	/* ttl limit */
+	unsigned int vifc_rate_limit;	/* Rate limiter values (NI) */
+	struct in_addr vifc_lcl_addr;	/* Our address */
+	struct in_addr vifc_rmt_addr;	/* IPIP tunnel addr */
 };
-#define VIFF_TUNNEL 0x1
-#define VIFF_SRCRT 0x2
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-#define VIFF_REGISTER 0x4
-#define VIFF_USE_IFINDEX 0x8
-struct mfcctl {
- struct in_addr mfcc_origin;
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- struct in_addr mfcc_mcastgrp;
- vifi_t mfcc_parent;
- unsigned char mfcc_ttls[MAXVIFS];
- unsigned int mfcc_pkt_cnt;
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- unsigned int mfcc_byte_cnt;
- unsigned int mfcc_wrong_if;
- int mfcc_expire;
+
+#define VIFF_TUNNEL	0x1	/* IPIP tunnel */
+#define VIFF_SRCRT	0x2	/* NI */
+#define VIFF_REGISTER	0x4	/* register vif	*/
+
+/*
+ *	Cache manipulation structures for mrouted and PIMd
+ */
+ 
+struct mfcctl
+{
+	struct in_addr mfcc_origin;		/* Origin of mcast	*/
+	struct in_addr mfcc_mcastgrp;		/* Group in question	*/
+	vifi_t	mfcc_parent;			/* Where it arrived	*/
+	unsigned char mfcc_ttls[MAXVIFS];	/* Where it is going	*/
+	unsigned int mfcc_pkt_cnt;		/* pkt count for src-grp */
+	unsigned int mfcc_byte_cnt;
+	unsigned int mfcc_wrong_if;
+	int	     mfcc_expire;
 };
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-struct sioc_sg_req {
- struct in_addr src;
- struct in_addr grp;
- unsigned long pktcnt;
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- unsigned long bytecnt;
- unsigned long wrong_if;
+
+/* 
+ *	Group count retrieval for mrouted
+ */
+ 
+struct sioc_sg_req
+{
+	struct in_addr src;
+	struct in_addr grp;
+	unsigned long pktcnt;
+	unsigned long bytecnt;
+	unsigned long wrong_if;
 };
-struct sioc_vif_req {
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- vifi_t vifi;
- unsigned long icount;
- unsigned long ocount;
- unsigned long ibytes;
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- unsigned long obytes;
+
+/*
+ *	To get vif packet counts
+ */
+
+struct sioc_vif_req
+{
+	vifi_t	vifi;		/* Which iface */
+	unsigned long icount;	/* In packets */
+	unsigned long ocount;	/* Out packets */
+	unsigned long ibytes;	/* In bytes */
+	unsigned long obytes;	/* Out bytes */
 };
-struct igmpmsg {
- __u32 unused1,unused2;
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- unsigned char im_msgtype;
- unsigned char im_mbz;
- unsigned char im_vif;
- unsigned char unused3;
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- struct in_addr im_src,im_dst;
+
+/*
+ *	This is the format the mroute daemon expects to see IGMP control
+ *	data. Magically happens to be like an IP packet as per the original
+ */
+ 
+struct igmpmsg
+{
+	__u32 unused1,unused2;
+	unsigned char im_msgtype;		/* What is this */
+	unsigned char im_mbz;			/* Must be zero */
+	unsigned char im_vif;			/* Interface (this ought to be a vifi_t!) */
+	unsigned char unused3;
+	struct in_addr im_src,im_dst;
 };
-#define MFC_ASSERT_THRESH (3*HZ)
-#define IGMPMSG_NOCACHE 1
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-#define IGMPMSG_WRONGVIF 2
-#define IGMPMSG_WHOLEPKT 3
+
+/*
+ *	That's all usermode folks
+ */
+
+
+
+#define MFC_ASSERT_THRESH (3*HZ)		/* Maximal freq. of asserts */
+
+/*
+ *	Pseudo messages used by mrouted
+ */
+
+#define IGMPMSG_NOCACHE		1		/* Kern cache fill request to mrouted */
+#define IGMPMSG_WRONGVIF	2		/* For PIM assert processing (unused) */
+#define IGMPMSG_WHOLEPKT	3		/* For PIM Register processing */
+
+
 #endif

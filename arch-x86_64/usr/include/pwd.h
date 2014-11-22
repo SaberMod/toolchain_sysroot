@@ -1,128 +1,186 @@
-/*-
- * Copyright (c) 1989, 1993
- *	The Regents of the University of California.  All rights reserved.
- * (c) UNIX System Laboratories, Inc.
- * All or some portions of this file are derived from material licensed
- * to the University of California by American Telephone and Telegraph
- * Co. or Unix System Laboratories, Inc. and are reproduced herein with
- * the permission of UNIX System Laboratories, Inc.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the University nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- *
- *	@(#)pwd.h	8.2 (Berkeley) 1/21/94
+/* Copyright (C) 1991,1992,1995-2001,2003,2004 Free Software Foundation, Inc.
+   This file is part of the GNU C Library.
+
+   The GNU C Library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
+
+   The GNU C Library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with the GNU C Library; if not, write to the Free
+   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+   02111-1307 USA.  */
+
+/*
+ *	POSIX Standard: 9.2.2 User Database Access	<pwd.h>
  */
 
-/*-
- * Portions Copyright(C) 1995, Jason Downs.  All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR(S) ``AS IS'' AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR(S) BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- */
+#ifndef	_PWD_H
+#define	_PWD_H	1
 
-#ifndef _PWD_H_
-#define _PWD_H_
-
-#include <sys/cdefs.h>
-#include <sys/types.h>
-
-#define _PATH_PASSWD        "/etc/passwd"
-#define _PATH_MASTERPASSWD  "/etc/master.passwd"
-#define _PATH_MASTERPASSWD_LOCK "/etc/ptmp"
-
-#define _PATH_PASSWD_CONF   "/etc/passwd.conf"
-#define _PATH_PASSWDCONF    _PATH_PASSWD_CONF   /* XXX: compat */
-#define _PATH_USERMGMT_CONF "/etc/usermgmt.conf"
-
-#define _PATH_MP_DB     "/etc/pwd.db"
-#define _PATH_SMP_DB        "/etc/spwd.db"
-
-#define _PATH_PWD_MKDB      "/usr/sbin/pwd_mkdb"
-
-#define _PW_KEYBYNAME       '1' /* stored by name */
-#define _PW_KEYBYNUM        '2' /* stored by entry in the "file" */
-#define _PW_KEYBYUID        '3' /* stored by uid */
-
-#define _PASSWORD_EFMT1     '_' /* extended DES encryption format */
-#define _PASSWORD_NONDES    '$' /* non-DES encryption formats */
-
-#define _PASSWORD_LEN       128 /* max length, not counting NUL */
-
-#define _PASSWORD_NOUID     0x01    /* flag for no specified uid. */
-#define _PASSWORD_NOGID     0x02    /* flag for no specified gid. */
-#define _PASSWORD_NOCHG     0x04    /* flag for no specified change. */
-#define _PASSWORD_NOEXP     0x08    /* flag for no specified expire. */
-
-#define _PASSWORD_OLDFMT    0x10    /* flag to expect an old style entry */
-#define _PASSWORD_NOWARN    0x20    /* no warnings for bad entries */
-
-#define _PASSWORD_WARNDAYS  14  /* days to warn about expiry */
-#define _PASSWORD_CHGNOW    -1  /* special day to force password change at next login */
-
-struct passwd
-{
-  char* pw_name;
-  char* pw_passwd;
-  uid_t pw_uid;
-  gid_t pw_gid;
-#ifdef __LP64__
-  char* pw_gecos;
-#endif
-  char* pw_dir;
-  char* pw_shell;
-};
+#include <features.h>
 
 __BEGIN_DECLS
 
-struct passwd* getpwnam(const char*);
-struct passwd* getpwuid(uid_t);
+#include <bits/types.h>
 
-int getpwnam_r(const char*, struct passwd*, char*, size_t, struct passwd**);
-int getpwuid_r(uid_t, struct passwd*, char*, size_t, struct passwd**);
+#define __need_size_t
+#include <stddef.h>
 
-void endpwent(void);
-struct passwd* getpwent(void);
-int setpwent(void);
+#if defined __USE_XOPEN || defined __USE_XOPEN2K
+/* The Single Unix specification says that some more types are
+   available here.  */
+# ifndef __gid_t_defined
+typedef __gid_t gid_t;
+#  define __gid_t_defined
+# endif
+
+# ifndef __uid_t_defined
+typedef __uid_t uid_t;
+#  define __uid_t_defined
+# endif
+#endif
+
+/* The passwd structure.  */
+struct passwd
+{
+  char *pw_name;		/* Username.  */
+  char *pw_passwd;		/* Password.  */
+  __uid_t pw_uid;		/* User ID.  */
+  __gid_t pw_gid;		/* Group ID.  */
+  char *pw_gecos;		/* Real name.  */
+  char *pw_dir;			/* Home directory.  */
+  char *pw_shell;		/* Shell program.  */
+};
+
+
+#if defined __USE_SVID || defined __USE_GNU
+# define __need_FILE
+# include <stdio.h>
+#endif
+
+
+#if defined __USE_SVID || defined __USE_MISC || defined __USE_XOPEN_EXTENDED
+/* Rewind the password-file stream.
+
+   This function is a possible cancellation point and therefore not
+   marked with __THROW.  */
+extern void setpwent (void);
+
+/* Close the password-file stream.
+
+   This function is a possible cancellation point and therefore not
+   marked with __THROW.  */
+extern void endpwent (void);
+
+/* Read an entry from the password-file stream, opening it if necessary.
+
+   This function is a possible cancellation point and therefore not
+   marked with __THROW.  */
+extern struct passwd *getpwent (void);
+#endif
+
+#ifdef	__USE_SVID
+/* Read an entry from STREAM.
+
+   This function is not part of POSIX and therefore no official
+   cancellation point.  But due to similarity with an POSIX interface
+   or due to the implementation it is a cancellation point and
+   therefore not marked with __THROW.  */
+extern struct passwd *fgetpwent (FILE *__stream);
+
+/* Write the given entry onto the given stream.
+
+   This function is not part of POSIX and therefore no official
+   cancellation point.  But due to similarity with an POSIX interface
+   or due to the implementation it is a cancellation point and
+   therefore not marked with __THROW.  */
+extern int putpwent (__const struct passwd *__restrict __p,
+		     FILE *__restrict __f);
+#endif
+
+/* Search for an entry with a matching user ID.
+
+   This function is a possible cancellation point and therefore not
+   marked with __THROW.  */
+extern struct passwd *getpwuid (__uid_t __uid);
+
+/* Search for an entry with a matching username.
+
+   This function is a possible cancellation point and therefore not
+   marked with __THROW.  */
+extern struct passwd *getpwnam (__const char *__name);
+
+#if defined __USE_POSIX || defined __USE_MISC
+
+# ifdef __USE_MISC
+/* Reasonable value for the buffer sized used in the reentrant
+   functions below.  But better use `sysconf'.  */
+#  define NSS_BUFLEN_PASSWD	1024
+# endif
+
+/* Reentrant versions of some of the functions above.
+
+   PLEASE NOTE: the `getpwent_r' function is not (yet) standardized.
+   The interface may change in later versions of this library.  But
+   the interface is designed following the principals used for the
+   other reentrant functions so the chances are good this is what the
+   POSIX people would choose.  */
+
+# if defined __USE_SVID || defined __USE_MISC
+/* This function is not part of POSIX and therefore no official
+   cancellation point.  But due to similarity with an POSIX interface
+   or due to the implementation it is a cancellation point and
+   therefore not marked with __THROW.  */
+extern int getpwent_r (struct passwd *__restrict __resultbuf,
+		       char *__restrict __buffer, size_t __buflen,
+		       struct passwd **__restrict __result);
+# endif
+
+extern int getpwuid_r (__uid_t __uid,
+		       struct passwd *__restrict __resultbuf,
+		       char *__restrict __buffer, size_t __buflen,
+		       struct passwd **__restrict __result);
+
+extern int getpwnam_r (__const char *__restrict __name,
+		       struct passwd *__restrict __resultbuf,
+		       char *__restrict __buffer, size_t __buflen,
+		       struct passwd **__restrict __result);
+
+
+# ifdef	__USE_SVID
+/* Read an entry from STREAM.  This function is not standardized and
+   probably never will.
+
+   This function is not part of POSIX and therefore no official
+   cancellation point.  But due to similarity with an POSIX interface
+   or due to the implementation it is a cancellation point and
+   therefore not marked with __THROW.  */
+extern int fgetpwent_r (FILE *__restrict __stream,
+			struct passwd *__restrict __resultbuf,
+			char *__restrict __buffer, size_t __buflen,
+			struct passwd **__restrict __result);
+# endif
+
+#endif	/* POSIX or reentrant */
+
+#ifdef __USE_GNU
+/* Re-construct the password-file line for the given uid
+   in the given buffer.  This knows the format that the caller
+   will expect, but this need not be the format of the password file.
+
+   This function is not part of POSIX and therefore no official
+   cancellation point.  But due to similarity with an POSIX interface
+   or due to the implementation it is a cancellation point and
+   therefore not marked with __THROW.  */
+extern int getpw (__uid_t __uid, char *__buffer);
+#endif
 
 __END_DECLS
 
-#endif
+#endif /* pwd.h  */

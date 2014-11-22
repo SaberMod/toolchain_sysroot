@@ -1,91 +1,80 @@
-/****************************************************************************
- ****************************************************************************
- ***
- ***   This header was automatically generated from a Linux kernel header
- ***   of the same name, to make information necessary for userspace to
- ***   call into the kernel available to libc.  It contains only constants,
- ***   structures, and macros generated from the original header, and thus,
- ***   contains no copyrightable information.
- ***
- ***   To edit the content of this header, modify the corresponding
- ***   source file (e.g. under external/kernel-headers/original/) then
- ***   run bionic/libc/kernel/tools/update_all.py
- ***
- ***   Any manual change here will be lost the next time this script will
- ***   be run. You've been warned!
- ***
- ****************************************************************************
- ****************************************************************************/
-#ifndef _UAPI_LINUX_SEM_H
-#define _UAPI_LINUX_SEM_H
+#ifndef _LINUX_SEM_H
+#define _LINUX_SEM_H
+
 #include <linux/ipc.h>
-#define SEM_UNDO 0x1000
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-#define GETPID 11
-#define GETVAL 12
-#define GETALL 13
-#define GETNCNT 14
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-#define GETZCNT 15
-#define SETVAL 16
-#define SETALL 17
+
+/* semop flags */
+#define SEM_UNDO        0x1000  /* undo the operation on exit */
+
+/* semctl Command Definitions. */
+#define GETPID  11       /* get sempid */
+#define GETVAL  12       /* get semval */
+#define GETALL  13       /* get all semval's */
+#define GETNCNT 14       /* get semncnt */
+#define GETZCNT 15       /* get semzcnt */
+#define SETVAL  16       /* set semval */
+#define SETALL  17       /* set all semval's */
+
+/* ipcs ctl cmds */
 #define SEM_STAT 18
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
 #define SEM_INFO 19
+
+/* Obsolete, used only for backwards compatibility and libc5 compiles */
 struct semid_ds {
- struct ipc_perm sem_perm;
- __kernel_time_t sem_otime;
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- __kernel_time_t sem_ctime;
- struct sem *sem_base;
- struct sem_queue *sem_pending;
- struct sem_queue **sem_pending_last;
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- struct sem_undo *undo;
- unsigned short sem_nsems;
+	struct ipc_perm	sem_perm;		/* permissions .. see ipc.h */
+	__kernel_time_t	sem_otime;		/* last semop time */
+	__kernel_time_t	sem_ctime;		/* last change time */
+	struct sem	*sem_base;		/* ptr to first semaphore in array */
+	struct sem_queue *sem_pending;		/* pending operations to be processed */
+	struct sem_queue **sem_pending_last;	/* last pending operation */
+	struct sem_undo	*undo;			/* undo requests on this array */
+	unsigned short	sem_nsems;		/* no. of semaphores in array */
 };
+
+/* Include the definition of semid64_ds */
 #include <asm/sembuf.h>
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+
+/* semop system calls takes an array of these. */
 struct sembuf {
- unsigned short sem_num;
- short sem_op;
- short sem_flg;
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+	unsigned short  sem_num;	/* semaphore index in array */
+	short		sem_op;		/* semaphore operation */
+	short		sem_flg;	/* operation flags */
 };
+
+/* arg for semctl system calls. */
 union semun {
- int val;
- struct semid_ds __user *buf;
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- unsigned short __user *array;
- struct seminfo __user *__buf;
- void __user *__pad;
+	int val;			/* value for SETVAL */
+	struct semid_ds *buf;	/* buffer for IPC_STAT & IPC_SET */
+	unsigned short *array;	/* array for GETALL & SETALL */
+	struct seminfo *__buf;	/* buffer for IPC_INFO */
+	void *__pad;
 };
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-struct seminfo {
- int semmap;
- int semmni;
- int semmns;
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- int semmnu;
- int semmsl;
- int semopm;
- int semume;
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- int semusz;
- int semvmx;
- int semaem;
+
+struct  seminfo {
+	int semmap;
+	int semmni;
+	int semmns;
+	int semmnu;
+	int semmsl;
+	int semopm;
+	int semume;
+	int semusz;
+	int semvmx;
+	int semaem;
 };
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-#define SEMMNI 128
-#define SEMMSL 250
-#define SEMMNS (SEMMNI*SEMMSL)
-#define SEMOPM 32
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-#define SEMVMX 32767
-#define SEMAEM SEMVMX
-#define SEMUME SEMOPM
-#define SEMMNU SEMMNS
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-#define SEMMAP SEMMNS
-#define SEMUSZ 20
-#endif
+
+#define SEMMNI  128             /* <= IPCMNI  max # of semaphore identifiers */
+#define SEMMSL  250             /* <= 8 000 max num of semaphores per id */
+#define SEMMNS  (SEMMNI*SEMMSL) /* <= INT_MAX max # of semaphores in system */
+#define SEMOPM  32	        /* <= 1 000 max num of ops per semop call */
+#define SEMVMX  32767           /* <= 32767 semaphore maximum value */
+#define SEMAEM  SEMVMX          /* adjust on exit max value */
+
+/* unused */
+#define SEMUME  SEMOPM          /* max num of undo entries per process */
+#define SEMMNU  SEMMNS          /* num of undo structures system wide */
+#define SEMMAP  SEMMNS          /* # of entries in semaphore map */
+#define SEMUSZ  20		/* sizeof struct sem_undo */
+
+
+#endif /* _LINUX_SEM_H */

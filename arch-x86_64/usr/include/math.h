@@ -1,759 +1,479 @@
-/*
- * ====================================================
- * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
- *
- * Developed at SunPro, a Sun Microsystems, Inc. business.
- * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice
- * is preserved.
- * ====================================================
- */
+/* Declarations for math functions.
+   Copyright (C) 1991-1993, 1995-1999, 2001, 2002, 2004, 2006, 2009
+   Free Software Foundation, Inc.
+   This file is part of the GNU C Library.
+
+   The GNU C Library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
+
+   The GNU C Library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with the GNU C Library; if not, write to the Free
+   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+   02111-1307 USA.  */
 
 /*
- * from: @(#)fdlibm.h 5.1 93/09/24
- * $FreeBSD$
+ *	ISO C99 Standard: 7.12 Mathematics	<math.h>
  */
 
-#ifndef _MATH_H_
-#define	_MATH_H_
+#ifndef	_MATH_H
+#define	_MATH_H	1
 
-#include <sys/cdefs.h>
-#include <limits.h>
+#include <features.h>
 
 __BEGIN_DECLS
-#pragma GCC visibility push(default)
 
-/*
- * ANSI/POSIX
- */
-extern const union __infinity_un {
-	unsigned char	__uc[8];
-	double		__ud;
-} __infinity;
+/* Get machine-dependent HUGE_VAL value (returned on overflow).
+   On all IEEE754 machines, this is +Infinity.  */
+#include <bits/huge_val.h>
+#ifdef __USE_ISOC99
+# include <bits/huge_valf.h>
+# include <bits/huge_vall.h>
 
-extern const union __nan_un {
-	unsigned char	__uc[sizeof(float)];
-	float		__uf;
-} __nan;
+/* Get machine-dependent INFINITY value.  */
+# include <bits/inf.h>
 
-#if __GNUC_PREREQ(3, 3) || (defined(__INTEL_COMPILER) && __INTEL_COMPILER >= 800)
-#define	__MATH_BUILTIN_CONSTANTS
-#endif
+/* Get machine-dependent NAN value (returned for some domain errors).  */
+# include <bits/nan.h>
+#endif /* __USE_ISOC99 */
 
-#if __GNUC_PREREQ(3, 0) && !defined(__INTEL_COMPILER)
-#define	__MATH_BUILTIN_RELOPS
-#endif
+/* Get general and ISO C99 specific information.  */
+#include <bits/mathdef.h>
 
-#ifdef __MATH_BUILTIN_CONSTANTS
-#define	HUGE_VAL	__builtin_huge_val()
-#else
-#define	HUGE_VAL	(__infinity.__ud)
-#endif
+/* The file <bits/mathcalls.h> contains the prototypes for all the
+   actual math functions.  These macros are used for those prototypes,
+   so we can easily declare each function as both `name' and `__name',
+   and can declare the float versions `namef' and `__namef'.  */
 
-#if __ISO_C_VISIBLE >= 1999
-#define	FP_ILOGB0	(-INT_MAX) /* Android-changed */
-#define	FP_ILOGBNAN	INT_MAX /* Android-changed */
+#define __MATHCALL(function,suffix, args)	\
+  __MATHDECL (_Mdouble_,function,suffix, args)
+#define __MATHDECL(type, function,suffix, args) \
+  __MATHDECL_1(type, function,suffix, args); \
+  __MATHDECL_1(type, __CONCAT(__,function),suffix, args)
+#define __MATHCALLX(function,suffix, args, attrib)	\
+  __MATHDECLX (_Mdouble_,function,suffix, args, attrib)
+#define __MATHDECLX(type, function,suffix, args, attrib) \
+  __MATHDECL_1(type, function,suffix, args) __attribute__ (attrib); \
+  __MATHDECL_1(type, __CONCAT(__,function),suffix, args) __attribute__ (attrib)
+#define __MATHDECL_1(type, function,suffix, args) \
+  extern type __MATH_PRECNAME(function,suffix) args __THROW
 
-#ifdef __MATH_BUILTIN_CONSTANTS
-#define	HUGE_VALF	__builtin_huge_valf()
-#define	HUGE_VALL	__builtin_huge_vall()
-#define	INFINITY	__builtin_inff()
-#define	NAN		__builtin_nanf("")
-#else
-#define	HUGE_VALF	(float)HUGE_VAL
-#define	HUGE_VALL	(long double)HUGE_VAL
-#define	INFINITY	HUGE_VALF
-#define	NAN		(__nan.__uf)
-#endif /* __MATH_BUILTIN_CONSTANTS */
+#define _Mdouble_ 		double
+#define __MATH_PRECNAME(name,r)	__CONCAT(name,r)
+# define _Mdouble_BEGIN_NAMESPACE __BEGIN_NAMESPACE_STD
+# define _Mdouble_END_NAMESPACE   __END_NAMESPACE_STD
+#include <bits/mathcalls.h>
+#undef	_Mdouble_
+#undef _Mdouble_BEGIN_NAMESPACE
+#undef _Mdouble_END_NAMESPACE
+#undef	__MATH_PRECNAME
 
-#define	MATH_ERRNO	1
-#define	MATH_ERREXCEPT	2
-#define	math_errhandling	MATH_ERREXCEPT
+#if defined __USE_MISC || defined __USE_ISOC99
 
-#define	FP_FAST_FMAF	1
-#ifdef __ia64__
-#define	FP_FAST_FMA	1
-#define	FP_FAST_FMAL	1
-#endif
 
-/* Symbolic constants to classify floating point numbers. */
-#define	FP_INFINITE	0x01
-#define	FP_NAN		0x02
-#define	FP_NORMAL	0x04
-#define	FP_SUBNORMAL	0x08
-#define	FP_ZERO		0x10
-#define	fpclassify(x) \
-    ((sizeof (x) == sizeof (float)) ? __fpclassifyf(x) \
-    : (sizeof (x) == sizeof (double)) ? __fpclassifyd(x) \
-    : __fpclassifyl(x))
+/* Include the file of declarations again, this time using `float'
+   instead of `double' and appending f to each function name.  */
 
-#define	isfinite(x)					\
-    ((sizeof (x) == sizeof (float)) ? __isfinitef(x)	\
-    : (sizeof (x) == sizeof (double)) ? __isfinite(x)	\
-    : __isfinitel(x))
-#define	isinf(x)					\
-    ((sizeof (x) == sizeof (float)) ? __isinff(x)	\
-    : (sizeof (x) == sizeof (double)) ? isinf(x)	\
-    : __isinfl(x))
-#define	isnan(x)					\
-    ((sizeof (x) == sizeof (float)) ? __isnanf(x)	\
-    : (sizeof (x) == sizeof (double)) ? isnan(x)	\
-    : __isnanl(x))
-#define	isnormal(x)					\
-    ((sizeof (x) == sizeof (float)) ? __isnormalf(x)	\
-    : (sizeof (x) == sizeof (double)) ? __isnormal(x)	\
-    : __isnormall(x))
+# ifndef _Mfloat_
+#  define _Mfloat_		float
+# endif
+# define _Mdouble_ 		_Mfloat_
+# ifdef __STDC__
+#  define __MATH_PRECNAME(name,r) name##f##r
+# else
+#  define __MATH_PRECNAME(name,r) name/**/f/**/r
+# endif
+# define _Mdouble_BEGIN_NAMESPACE __BEGIN_NAMESPACE_C99
+# define _Mdouble_END_NAMESPACE   __END_NAMESPACE_C99
+# include <bits/mathcalls.h>
+# undef	_Mdouble_
+# undef _Mdouble_BEGIN_NAMESPACE
+# undef _Mdouble_END_NAMESPACE
+# undef	__MATH_PRECNAME
 
-#ifdef __MATH_BUILTIN_RELOPS
-#define	isgreater(x, y)		__builtin_isgreater((x), (y))
-#define	isgreaterequal(x, y)	__builtin_isgreaterequal((x), (y))
-#define	isless(x, y)		__builtin_isless((x), (y))
-#define	islessequal(x, y)	__builtin_islessequal((x), (y))
-#define	islessgreater(x, y)	__builtin_islessgreater((x), (y))
-#define	isunordered(x, y)	__builtin_isunordered((x), (y))
-#else
-#define	isgreater(x, y)		(!isunordered((x), (y)) && (x) > (y))
-#define	isgreaterequal(x, y)	(!isunordered((x), (y)) && (x) >= (y))
-#define	isless(x, y)		(!isunordered((x), (y)) && (x) < (y))
-#define	islessequal(x, y)	(!isunordered((x), (y)) && (x) <= (y))
-#define	islessgreater(x, y)	(!isunordered((x), (y)) && \
-					((x) > (y) || (y) > (x)))
-#define	isunordered(x, y)	(isnan(x) || isnan(y))
-#endif /* __MATH_BUILTIN_RELOPS */
+# if (__STDC__ - 0 || __GNUC__ - 0) \
+     && (!defined __NO_LONG_DOUBLE_MATH \
+	 || defined __LDBL_COMPAT \
+	 || !defined _LIBC)
+#  ifdef __LDBL_COMPAT
 
-#define	signbit(x)					\
-    ((sizeof (x) == sizeof (float)) ? __signbitf(x)	\
-    : (sizeof (x) == sizeof (double)) ? __signbit(x)	\
-    : __signbitl(x))
+#   ifdef __USE_ISOC99
+extern float __nldbl_nexttowardf (float __x, long double __y)
+				  __THROW __attribute__ ((__const__));
+#    ifdef __REDIRECT_NTH
+extern float __REDIRECT_NTH (nexttowardf, (float __x, long double __y),
+			     __nldbl_nexttowardf)
+     __attribute__ ((__const__));
+extern double __REDIRECT_NTH (nexttoward, (double __x, long double __y),
+			      nextafter) __attribute__ ((__const__));
+extern long double __REDIRECT_NTH (nexttowardl,
+				   (long double __x, long double __y),
+				   nextafter) __attribute__ ((__const__));
+#    endif
+#   endif
+#  endif
 
-typedef double __double_t;
-typedef __double_t double_t;
-typedef float __float_t;
-typedef __float_t float_t;
-#endif /* __ISO_C_VISIBLE >= 1999 */
+#  if defined __LDBL_COMPAT || defined __NO_LONG_DOUBLE_MATH
 
-/*
- * XOPEN/SVID
- */
-#if __BSD_VISIBLE || __XSI_VISIBLE
-#define	M_E		2.7182818284590452354	/* e */
-#define	M_LOG2E		1.4426950408889634074	/* log 2e */
-#define	M_LOG10E	0.43429448190325182765	/* log 10e */
-#define	M_LN2		0.69314718055994530942	/* log e2 */
-#define	M_LN10		2.30258509299404568402	/* log e10 */
-#define	M_PI		3.14159265358979323846	/* pi */
-#define	M_PI_2		1.57079632679489661923	/* pi/2 */
-#define	M_PI_4		0.78539816339744830962	/* pi/4 */
-#define	M_1_PI		0.31830988618379067154	/* 1/pi */
-#define	M_2_PI		0.63661977236758134308	/* 2/pi */
-#define	M_2_SQRTPI	1.12837916709551257390	/* 2/sqrt(pi) */
-#define	M_SQRT2		1.41421356237309504880	/* sqrt(2) */
-#define	M_SQRT1_2	0.70710678118654752440	/* 1/sqrt(2) */
+#   undef __MATHDECL_1
+#   define __MATHDECL_2(type, function,suffix, args, alias) \
+  extern type __REDIRECT_NTH(__MATH_PRECNAME(function,suffix), \
+			     args, alias)
+#   define __MATHDECL_1(type, function,suffix, args) \
+  __MATHDECL_2(type, function,suffix, args, __CONCAT(function,suffix))
+#  endif
 
-#define	MAXFLOAT	((float)3.40282346638528860e+38)
+/* Include the file of declarations again, this time using `long double'
+   instead of `double' and appending l to each function name.  */
+#  ifndef _Mlong_double_
+#   define _Mlong_double_	long double
+#  endif
+#  define _Mdouble_ 		_Mlong_double_
+#  ifdef __STDC__
+#   define __MATH_PRECNAME(name,r) name##l##r
+#  else
+#   define __MATH_PRECNAME(name,r) name/**/l/**/r
+#  endif
+#  define _Mdouble_BEGIN_NAMESPACE __BEGIN_NAMESPACE_C99
+#  define _Mdouble_END_NAMESPACE   __END_NAMESPACE_C99
+#  include <bits/mathcalls.h>
+#  undef _Mdouble_
+#  undef _Mdouble_BEGIN_NAMESPACE
+#  undef _Mdouble_END_NAMESPACE
+#  undef __MATH_PRECNAME
+
+# endif /* __STDC__ || __GNUC__ */
+
+#endif	/* Use misc or ISO C99.  */
+#undef	__MATHDECL_1
+#undef	__MATHDECL
+#undef	__MATHCALL
+
+
+#if defined __USE_MISC || defined __USE_XOPEN
+/* This variable is used by `gamma' and `lgamma'.  */
 extern int signgam;
-#endif /* __BSD_VISIBLE || __XSI_VISIBLE */
-
-#if __BSD_VISIBLE
-#if 0
-/* Old value from 4.4BSD-Lite math.h; this is probably better. */
-#define	HUGE		HUGE_VAL
-#else
-#define	HUGE		MAXFLOAT
-#endif
-#endif /* __BSD_VISIBLE */
-
-/*
- * Most of these functions depend on the rounding mode and have the side
- * effect of raising floating-point exceptions, so they are not declared
- * as __pure2.  In C99, FENV_ACCESS affects the purity of these functions.
- */
-
-/*
- * ANSI/POSIX
- */
-int	__fpclassifyd(double) __NDK_FPABI_MATH__  __pure2;
-int	__fpclassifyf(float) __NDK_FPABI_MATH__  __pure2;
-int	__fpclassifyl(long double) __NDK_FPABI_MATH__  __pure2;
-int	__isfinitef(float) __NDK_FPABI_MATH__  __pure2;
-int	__isfinite(double) __NDK_FPABI_MATH__  __pure2;
-int	__isfinitel(long double) __NDK_FPABI_MATH__  __pure2;
-int	__isinff(float) __NDK_FPABI_MATH__  __pure2;
-int	__isinfl(long double) __NDK_FPABI_MATH__  __pure2;
-int	__isnanf(float) __NDK_FPABI_MATH__  __pure2;
-int	__isnanl(long double) __NDK_FPABI_MATH__  __pure2;
-int	__isnormalf(float) __NDK_FPABI_MATH__  __pure2;
-int	__isnormal(double) __NDK_FPABI_MATH__  __pure2;
-int	__isnormall(long double) __NDK_FPABI_MATH__  __pure2;
-int	__signbit(double) __NDK_FPABI_MATH__  __pure2;
-int	__signbitf(float) __NDK_FPABI_MATH__  __pure2;
-int	__signbitl(long double) __NDK_FPABI_MATH__  __pure2;
-
-double	acos(double) __NDK_FPABI_MATH__;
-double	asin(double) __NDK_FPABI_MATH__;
-double	atan(double) __NDK_FPABI_MATH__;
-double	atan2(double, double) __NDK_FPABI_MATH__;
-double	cos(double) __NDK_FPABI_MATH__;
-double	sin(double) __NDK_FPABI_MATH__;
-double	tan(double) __NDK_FPABI_MATH__;
-
-double	cosh(double) __NDK_FPABI_MATH__;
-double	sinh(double) __NDK_FPABI_MATH__;
-double	tanh(double) __NDK_FPABI_MATH__;
-
-double	exp(double) __NDK_FPABI_MATH__;
-double	frexp(double, int *) __NDK_FPABI_MATH__;	/* fundamentally !__pure2 */
-double	ldexp(double, int) __NDK_FPABI_MATH__;
-double	log(double) __NDK_FPABI_MATH__;
-double	log10(double) __NDK_FPABI_MATH__;
-double	modf(double, double *) __NDK_FPABI_MATH__;	/* fundamentally !__pure2 */
-
-double	pow(double, double) __NDK_FPABI_MATH__;
-double	sqrt(double) __NDK_FPABI_MATH__;
-
-double	ceil(double) __NDK_FPABI_MATH__;
-double	fabs(double) __NDK_FPABI_MATH__ __pure2;
-double	floor(double) __NDK_FPABI_MATH__;
-double	fmod(double, double) __NDK_FPABI_MATH__;
-
-/*
- * These functions are not in C90.
- */
-#if __BSD_VISIBLE || __ISO_C_VISIBLE >= 1999 || __XSI_VISIBLE
-double	acosh(double) __NDK_FPABI_MATH__;
-double	asinh(double) __NDK_FPABI_MATH__;
-double	atanh(double) __NDK_FPABI_MATH__;
-double	cbrt(double) __NDK_FPABI_MATH__;
-double	erf(double) __NDK_FPABI_MATH__;
-double	erfc(double) __NDK_FPABI_MATH__;
-double	exp2(double) __NDK_FPABI_MATH__;
-double	expm1(double) __NDK_FPABI_MATH__;
-double	fma(double, double, double) __NDK_FPABI_MATH__;
-double	hypot(double, double) __NDK_FPABI_MATH__;
-int	ilogb(double) __NDK_FPABI_MATH__ __pure2;
-int	(isinf)(double) __NDK_FPABI_MATH__ __pure2;
-int	(isnan)(double) __NDK_FPABI_MATH__ __pure2;
-double	lgamma(double) __NDK_FPABI_MATH__;
-long long llrint(double) __NDK_FPABI_MATH__;
-long long llround(double) __NDK_FPABI_MATH__;
-double	log1p(double) __NDK_FPABI_MATH__;
-double	log2(double) __NDK_FPABI_MATH__;
-double	logb(double) __NDK_FPABI_MATH__;
-long	lrint(double) __NDK_FPABI_MATH__;
-long	lround(double) __NDK_FPABI_MATH__;
-double	nan(const char *) __NDK_FPABI_MATH__ __pure2;
-double	nextafter(double, double) __NDK_FPABI_MATH__;
-double	remainder(double, double) __NDK_FPABI_MATH__;
-double	remquo(double, double, int *) __NDK_FPABI_MATH__;
-double	rint(double) __NDK_FPABI_MATH__;
-#endif /* __BSD_VISIBLE || __ISO_C_VISIBLE >= 1999 || __XSI_VISIBLE */
-
-#if __BSD_VISIBLE || __XSI_VISIBLE
-double	j0(double) __NDK_FPABI_MATH__;
-double	j1(double) __NDK_FPABI_MATH__;
-double	jn(int, double) __NDK_FPABI_MATH__;
-double	y0(double) __NDK_FPABI_MATH__;
-double	y1(double) __NDK_FPABI_MATH__;
-double	yn(int, double) __NDK_FPABI_MATH__;
-
-#if __XSI_VISIBLE <= 500 || __BSD_VISIBLE
-double	gamma(double) __NDK_FPABI_MATH__;
 #endif
 
-#if __XSI_VISIBLE <= 600 || __BSD_VISIBLE
-double	scalb(double, double) __NDK_FPABI_MATH__;
-#endif
-#endif /* __BSD_VISIBLE || __XSI_VISIBLE */
 
-#if __BSD_VISIBLE || __ISO_C_VISIBLE >= 1999
-double	copysign(double, double) __NDK_FPABI_MATH__ __pure2;
-double	fdim(double, double) __NDK_FPABI_MATH__;
-double	fmax(double, double) __NDK_FPABI_MATH__ __pure2;
-double	fmin(double, double) __NDK_FPABI_MATH__ __pure2;
-double	nearbyint(double) __NDK_FPABI_MATH__;
-double	round(double) __NDK_FPABI_MATH__;
-double	scalbln(double, long) __NDK_FPABI_MATH__;
-double	scalbn(double, int) __NDK_FPABI_MATH__;
-double	tgamma(double) __NDK_FPABI_MATH__;
-double	trunc(double) __NDK_FPABI_MATH__;
-#endif
+/* ISO C99 defines some generic macros which work on any data type.  */
+#ifdef __USE_ISOC99
 
-/*
- * BSD math library entry points
- */
-#if __BSD_VISIBLE
-double	drem(double, double) __NDK_FPABI_MATH__;
-int	finite(double) __NDK_FPABI_MATH__ __pure2;
-int	isnanf(float) __NDK_FPABI_MATH__ __pure2;
-long double significandl(long double) __NDK_FPABI_MATH__;
+/* Get the architecture specific values describing the floating-point
+   evaluation.  The following symbols will get defined:
 
-/*
- * Reentrant version of gamma & lgamma; passes signgam back by reference
- * as the second argument; user must allocate space for signgam.
- */
-double	gamma_r(double, int *) __NDK_FPABI_MATH__;
-double	lgamma_r(double, int *) __NDK_FPABI_MATH__;
+    float_t	floating-point type at least as wide as `float' used
+		to evaluate `float' expressions
+    double_t	floating-point type at least as wide as `double' used
+		to evaluate `double' expressions
 
-/*
- * IEEE Test Vector
- */
-double	significand(double) __NDK_FPABI_MATH__;
-#endif /* __BSD_VISIBLE */
+    FLT_EVAL_METHOD
+		Defined to
+		  0	if `float_t' is `float' and `double_t' is `double'
+		  1	if `float_t' and `double_t' are `double'
+		  2	if `float_t' and `double_t' are `long double'
+		  else	`float_t' and `double_t' are unspecified
 
-/* float versions of ANSI/POSIX functions */
-#if __ISO_C_VISIBLE >= 1999
-float	acosf(float) __NDK_FPABI_MATH__;
-float	asinf(float) __NDK_FPABI_MATH__;
-float	atanf(float) __NDK_FPABI_MATH__;
-float	atan2f(float, float) __NDK_FPABI_MATH__;
-float	cosf(float) __NDK_FPABI_MATH__;
-float	sinf(float) __NDK_FPABI_MATH__;
-float	tanf(float) __NDK_FPABI_MATH__;
+    INFINITY	representation of the infinity value of type `float'
 
-float	coshf(float) __NDK_FPABI_MATH__;
-float	sinhf(float) __NDK_FPABI_MATH__;
-float	tanhf(float) __NDK_FPABI_MATH__;
+    FP_FAST_FMA
+    FP_FAST_FMAF
+    FP_FAST_FMAL
+		If defined it indicates that the `fma' function
+		generally executes about as fast as a multiply and an add.
+		This macro is defined only iff the `fma' function is
+		implemented directly with a hardware multiply-add instructions.
 
-float	exp2f(float) __NDK_FPABI_MATH__;
-float	expf(float) __NDK_FPABI_MATH__;
-float	expm1f(float) __NDK_FPABI_MATH__;
-float	frexpf(float, int *) __NDK_FPABI_MATH__;	/* fundamentally !__pure2 */
-int	ilogbf(float) __NDK_FPABI_MATH__ __pure2;
-float	ldexpf(float, int) __NDK_FPABI_MATH__;
-float	log10f(float) __NDK_FPABI_MATH__;
-float	log1pf(float) __NDK_FPABI_MATH__;
-float	log2f(float) __NDK_FPABI_MATH__;
-float	logf(float) __NDK_FPABI_MATH__;
-float	modff(float, float *) __NDK_FPABI_MATH__;	/* fundamentally !__pure2 */
+    FP_ILOGB0	Expands to a value returned by `ilogb (0.0)'.
+    FP_ILOGBNAN	Expands to a value returned by `ilogb (NAN)'.
 
-float	powf(float, float) __NDK_FPABI_MATH__;
-float	sqrtf(float) __NDK_FPABI_MATH__;
+    DECIMAL_DIG	Number of decimal digits supported by conversion between
+		decimal and all internal floating-point formats.
 
-float	ceilf(float) __NDK_FPABI_MATH__;
-float	fabsf(float) __NDK_FPABI_MATH__ __pure2;
-float	floorf(float) __NDK_FPABI_MATH__;
-float	fmodf(float, float) __NDK_FPABI_MATH__;
-float	roundf(float) __NDK_FPABI_MATH__;
+*/
 
-float	erff(float) __NDK_FPABI_MATH__;
-float	erfcf(float) __NDK_FPABI_MATH__;
-float	hypotf(float, float) __NDK_FPABI_MATH__;
-float	lgammaf(float) __NDK_FPABI_MATH__;
-float	tgammaf(float) __NDK_FPABI_MATH__;
+/* All floating-point numbers can be put in one of these categories.  */
+enum
+  {
+    FP_NAN,
+# define FP_NAN FP_NAN
+    FP_INFINITE,
+# define FP_INFINITE FP_INFINITE
+    FP_ZERO,
+# define FP_ZERO FP_ZERO
+    FP_SUBNORMAL,
+# define FP_SUBNORMAL FP_SUBNORMAL
+    FP_NORMAL
+# define FP_NORMAL FP_NORMAL
+  };
 
-float	acoshf(float) __NDK_FPABI_MATH__;
-float	asinhf(float) __NDK_FPABI_MATH__;
-float	atanhf(float) __NDK_FPABI_MATH__;
-float	cbrtf(float) __NDK_FPABI_MATH__;
-float	logbf(float) __NDK_FPABI_MATH__;
-float	copysignf(float, float) __NDK_FPABI_MATH__ __pure2;
-long long llrintf(float) __NDK_FPABI_MATH__;
-long long llroundf(float) __NDK_FPABI_MATH__;
-long	lrintf(float) __NDK_FPABI_MATH__;
-long	lroundf(float) __NDK_FPABI_MATH__;
-float	nanf(const char *) __NDK_FPABI_MATH__ __pure2;
-float	nearbyintf(float) __NDK_FPABI_MATH__;
-float	nextafterf(float, float) __NDK_FPABI_MATH__;
-float	remainderf(float, float) __NDK_FPABI_MATH__;
-float	remquof(float, float, int *) __NDK_FPABI_MATH__;
-float	rintf(float) __NDK_FPABI_MATH__;
-float	scalblnf(float, long) __NDK_FPABI_MATH__;
-float	scalbnf(float, int) __NDK_FPABI_MATH__;
-float	truncf(float) __NDK_FPABI_MATH__;
+/* Return number of classification appropriate for X.  */
+# ifdef __NO_LONG_DOUBLE_MATH
+#  define fpclassify(x) \
+     (sizeof (x) == sizeof (float) ? __fpclassifyf (x) : __fpclassify (x))
+# else
+#  define fpclassify(x) \
+     (sizeof (x) == sizeof (float)					      \
+      ? __fpclassifyf (x)						      \
+      : sizeof (x) == sizeof (double)					      \
+      ? __fpclassify (x) : __fpclassifyl (x))
+# endif
 
-float	fdimf(float, float) __NDK_FPABI_MATH__;
-float	fmaf(float, float, float) __NDK_FPABI_MATH__;
-float	fmaxf(float, float) __NDK_FPABI_MATH__ __pure2;
-float	fminf(float, float) __NDK_FPABI_MATH__ __pure2;
-#endif
+/* Return nonzero value if sign of X is negative.  */
+# ifdef __NO_LONG_DOUBLE_MATH
+#  define signbit(x) \
+     (sizeof (x) == sizeof (float) ? __signbitf (x) : __signbit (x))
+# else
+#  define signbit(x) \
+     (sizeof (x) == sizeof (float)					      \
+      ? __signbitf (x)							      \
+      : sizeof (x) == sizeof (double)					      \
+      ? __signbit (x) : __signbitl (x))
+# endif
 
-/*
- * float versions of BSD math library entry points
- */
-#if __BSD_VISIBLE
-float	dremf(float, float) __NDK_FPABI_MATH__;
-int	finitef(float) __NDK_FPABI_MATH__ __pure2;
-float	gammaf(float) __NDK_FPABI_MATH__;
-float	j0f(float) __NDK_FPABI_MATH__;
-float	j1f(float) __NDK_FPABI_MATH__;
-float	jnf(int, float) __NDK_FPABI_MATH__;
-float	scalbf(float, float) __NDK_FPABI_MATH__;
-float	y0f(float) __NDK_FPABI_MATH__;
-float	y1f(float) __NDK_FPABI_MATH__;
-float	ynf(int, float) __NDK_FPABI_MATH__;
+/* Return nonzero value if X is not +-Inf or NaN.  */
+# ifdef __NO_LONG_DOUBLE_MATH
+#  define isfinite(x) \
+     (sizeof (x) == sizeof (float) ? __finitef (x) : __finite (x))
+# else
+#  define isfinite(x) \
+     (sizeof (x) == sizeof (float)					      \
+      ? __finitef (x)							      \
+      : sizeof (x) == sizeof (double)					      \
+      ? __finite (x) : __finitel (x))
+# endif
 
-/*
- * Float versions of reentrant version of gamma & lgamma; passes
- * signgam back by reference as the second argument; user must
- * allocate space for signgam.
- */
-float	gammaf_r(float, int *) __NDK_FPABI_MATH__;
-float	lgammaf_r(float, int *) __NDK_FPABI_MATH__;
+/* Return nonzero value if X is neither zero, subnormal, Inf, nor NaN.  */
+# define isnormal(x) (fpclassify (x) == FP_NORMAL)
 
-/*
- * float version of IEEE Test Vector
- */
-float	significandf(float) __NDK_FPABI_MATH__;
-#endif	/* __BSD_VISIBLE */
+/* Return nonzero value if X is a NaN.  We could use `fpclassify' but
+   we already have this functions `__isnan' and it is faster.  */
+# ifdef __NO_LONG_DOUBLE_MATH
+#  define isnan(x) \
+     (sizeof (x) == sizeof (float) ? __isnanf (x) : __isnan (x))
+# else
+#  define isnan(x) \
+     (sizeof (x) == sizeof (float)					      \
+      ? __isnanf (x)							      \
+      : sizeof (x) == sizeof (double)					      \
+      ? __isnan (x) : __isnanl (x))
+# endif
 
-/*
- * long double versions of ISO/POSIX math functions
- */
-#if __ISO_C_VISIBLE >= 1999
-long double	acoshl(long double) __NDK_FPABI_MATH__;
-long double	acosl(long double) __NDK_FPABI_MATH__;
-long double	asinhl(long double) __NDK_FPABI_MATH__;
-long double	asinl(long double) __NDK_FPABI_MATH__;
-long double	atan2l(long double, long double) __NDK_FPABI_MATH__;
-long double	atanhl(long double) __NDK_FPABI_MATH__;
-long double	atanl(long double) __NDK_FPABI_MATH__;
-long double	cbrtl(long double) __NDK_FPABI_MATH__;
-long double	ceill(long double) __NDK_FPABI_MATH__;
-long double	copysignl(long double, long double) __NDK_FPABI_MATH__ __pure2;
-long double	coshl(long double) __NDK_FPABI_MATH__;
-long double	cosl(long double) __NDK_FPABI_MATH__;
-long double	erfcl(long double) __NDK_FPABI_MATH__;
-long double	erfl(long double) __NDK_FPABI_MATH__;
-long double	exp2l(long double) __NDK_FPABI_MATH__;
-long double	expl(long double) __NDK_FPABI_MATH__;
-long double	expm1l(long double) __NDK_FPABI_MATH__;
-long double	fabsl(long double) __NDK_FPABI_MATH__ __pure2;
-long double	fdiml(long double, long double) __NDK_FPABI_MATH__;
-long double	floorl(long double) __NDK_FPABI_MATH__;
-long double	fmal(long double, long double, long double) __NDK_FPABI_MATH__;
-long double	fmaxl(long double, long double) __NDK_FPABI_MATH__ __pure2;
-long double	fminl(long double, long double) __NDK_FPABI_MATH__ __pure2;
-long double	fmodl(long double, long double) __NDK_FPABI_MATH__;
-long double	frexpl(long double value, int *) __NDK_FPABI_MATH__; /* fundamentally !__pure2 */
-long double	hypotl(long double, long double) __NDK_FPABI_MATH__;
-int		ilogbl(long double) __NDK_FPABI_MATH__ __pure2;
-long double	ldexpl(long double, int) __NDK_FPABI_MATH__;
-long double	lgammal(long double) __NDK_FPABI_MATH__;
-long long	llrintl(long double) __NDK_FPABI_MATH__;
-long long	llroundl(long double) __NDK_FPABI_MATH__;
-long double	log10l(long double) __NDK_FPABI_MATH__;
-long double	log1pl(long double) __NDK_FPABI_MATH__;
-long double	log2l(long double) __NDK_FPABI_MATH__;
-long double	logbl(long double) __NDK_FPABI_MATH__;
-long double	logl(long double) __NDK_FPABI_MATH__;
-long		lrintl(long double) __NDK_FPABI_MATH__;
-long		lroundl(long double) __NDK_FPABI_MATH__;
-long double	modfl(long double, long double *) __NDK_FPABI_MATH__; /* fundamentally !__pure2 */
-long double	nanl(const char *) __NDK_FPABI_MATH__ __pure2;
-long double	nearbyintl(long double) __NDK_FPABI_MATH__;
-long double	nextafterl(long double, long double) __NDK_FPABI_MATH__;
-double		nexttoward(double, long double) __NDK_FPABI_MATH__;
-float		nexttowardf(float, long double) __NDK_FPABI_MATH__;
-long double	nexttowardl(long double, long double) __NDK_FPABI_MATH__;
-long double	powl(long double, long double) __NDK_FPABI_MATH__;
-long double	remainderl(long double, long double) __NDK_FPABI_MATH__;
-long double	remquol(long double, long double, int *) __NDK_FPABI_MATH__;
-long double	rintl(long double) __NDK_FPABI_MATH__;
-long double	roundl(long double) __NDK_FPABI_MATH__;
-long double	scalblnl(long double, long) __NDK_FPABI_MATH__;
-long double	scalbnl(long double, int) __NDK_FPABI_MATH__;
-long double	sinhl(long double) __NDK_FPABI_MATH__;
-long double	sinl(long double) __NDK_FPABI_MATH__;
-long double	sqrtl(long double) __NDK_FPABI_MATH__;
-long double	tanhl(long double) __NDK_FPABI_MATH__;
-long double	tanl(long double) __NDK_FPABI_MATH__;
-long double	tgammal(long double) __NDK_FPABI_MATH__;
-long double	truncl(long double) __NDK_FPABI_MATH__;
+/* Return nonzero value is X is positive or negative infinity.  */
+# ifdef __NO_LONG_DOUBLE_MATH
+#  define isinf(x) \
+     (sizeof (x) == sizeof (float) ? __isinff (x) : __isinf (x))
+# else
+#  define isinf(x) \
+     (sizeof (x) == sizeof (float)					      \
+      ? __isinff (x)							      \
+      : sizeof (x) == sizeof (double)					      \
+      ? __isinf (x) : __isinfl (x))
+# endif
 
-#endif /* __ISO_C_VISIBLE >= 1999 */
+/* Bitmasks for the math_errhandling macro.  */
+# define MATH_ERRNO	1	/* errno set by math functions.  */
+# define MATH_ERREXCEPT	2	/* Exceptions raised by math functions.  */
 
-#if defined(_GNU_SOURCE)
-void sincos(double, double*, double*) __NDK_FPABI_MATH__;
-void sincosf(float, float*, float*) __NDK_FPABI_MATH__;
-void sincosl(long double, long double*, long double*) __NDK_FPABI_MATH__;
-#endif /* _GNU_SOURCE */
+/* By default all functions support both errno and exception handling.
+   In gcc's fast math mode and if inline functions are defined this
+   might not be true.  */
+# ifndef __FAST_MATH__
+#  define math_errhandling	(MATH_ERRNO | MATH_ERREXCEPT)
+# endif
 
-/* builtin version of all the above math functions are annotated too */
+#endif /* Use ISO C99.  */
 
-double	__builtin_acos(double) __NDK_FPABI_MATH__;
-double	__builtin_asin(double) __NDK_FPABI_MATH__;
-double	__builtin_atan(double) __NDK_FPABI_MATH__;
-double	__builtin_atan2(double, double) __NDK_FPABI_MATH__;
-double	__builtin_cos(double) __NDK_FPABI_MATH__;
-double	__builtin_sin(double) __NDK_FPABI_MATH__;
-double	__builtin_tan(double) __NDK_FPABI_MATH__;
+#ifdef	__USE_MISC
+/* Support for various different standard error handling behaviors.  */
+typedef enum
+{
+  _IEEE_ = -1,	/* According to IEEE 754/IEEE 854.  */
+  _SVID_,	/* According to System V, release 4.  */
+  _XOPEN_,	/* Nowadays also Unix98.  */
+  _POSIX_,
+  _ISOC_	/* Actually this is ISO C99.  */
+} _LIB_VERSION_TYPE;
 
-double	__builtin_cosh(double) __NDK_FPABI_MATH__;
-double	__builtin_sinh(double) __NDK_FPABI_MATH__;
-double	__builtin_tanh(double) __NDK_FPABI_MATH__;
-
-double	__builtin_exp(double) __NDK_FPABI_MATH__;
-double	__builtin_frexp(double, int *) __NDK_FPABI_MATH__;	/* fundamentally !__pure2 */
-double	__builtin_ldexp(double, int) __NDK_FPABI_MATH__;
-double	__builtin_log(double) __NDK_FPABI_MATH__;
-double	__builtin_log10(double) __NDK_FPABI_MATH__;
-double	__builtin_modf(double, double *) __NDK_FPABI_MATH__;	/* fundamentally !__pure2 */
-
-double	__builtin_pow(double, double) __NDK_FPABI_MATH__;
-double	__builtin_sqrt(double) __NDK_FPABI_MATH__;
-
-double	__builtin_ceil(double) __NDK_FPABI_MATH__;
-double	__builtin_fabs(double) __NDK_FPABI_MATH__ __pure2;
-double	__builtin_floor(double) __NDK_FPABI_MATH__;
-double	__builtin_fmod(double, double) __NDK_FPABI_MATH__;
-
-/*
- * These functions are not in C90.
- */
-#if __BSD_VISIBLE || __ISO_C_VISIBLE >= 1999 || __XSI_VISIBLE
-double	__builtin_acosh(double) __NDK_FPABI_MATH__;
-double	__builtin_asinh(double) __NDK_FPABI_MATH__;
-double	__builtin_atanh(double) __NDK_FPABI_MATH__;
-double	__builtin_cbrt(double) __NDK_FPABI_MATH__;
-double	__builtin_erf(double) __NDK_FPABI_MATH__;
-double	__builtin_erfc(double) __NDK_FPABI_MATH__;
-double	__builtin_exp2(double) __NDK_FPABI_MATH__;
-double	__builtin_expm1(double) __NDK_FPABI_MATH__;
-double	__builtin_fma(double, double, double) __NDK_FPABI_MATH__;
-double	__builtin_hypot(double, double) __NDK_FPABI_MATH__;
-int	__builtin_ilogb(double) __NDK_FPABI_MATH__ __pure2;
-#if !defined(__clang__) || __clang_major__ > 3 || (__clang_major__ == 3 && __clang_minor__ >= 6)
-int	__builtin_isinf(double) __NDK_FPABI_MATH__ __pure2;
-int	__builtin_isnan(double) __NDK_FPABI_MATH__ __pure2;
-#else
-/* clang < 3.5 has faulty prototype for __builtin_isnan */
-#endif
-double	__builtin_lgamma(double) __NDK_FPABI_MATH__;
-long long __builtin_llrint(double) __NDK_FPABI_MATH__;
-long long __builtin_llround(double) __NDK_FPABI_MATH__;
-double	__builtin_log1p(double) __NDK_FPABI_MATH__;
-double	__builtin_log2(double) __NDK_FPABI_MATH__;
-double	__builtin_logb(double) __NDK_FPABI_MATH__;
-long	__builtin_lrint(double) __NDK_FPABI_MATH__;
-long	__builtin_lround(double) __NDK_FPABI_MATH__;
-double	__builtin_nan(const char *) __NDK_FPABI_MATH__ __pure2;
-double	__builtin_nextafter(double, double) __NDK_FPABI_MATH__;
-double	__builtin_remainder(double, double) __NDK_FPABI_MATH__;
-double	__builtin_remquo(double, double, int *) __NDK_FPABI_MATH__;
-double	__builtin_rint(double) __NDK_FPABI_MATH__;
-#endif /* __BSD_VISIBLE || __ISO_C_VISIBLE >= 1999 || __XSI_VISIBLE */
-
-#if __BSD_VISIBLE || __XSI_VISIBLE
-double	__builtin_j0(double) __NDK_FPABI_MATH__;
-double	__builtin_j1(double) __NDK_FPABI_MATH__;
-double	__builtin_jn(int, double) __NDK_FPABI_MATH__;
-double	__builtin_y0(double) __NDK_FPABI_MATH__;
-double	__builtin_y1(double) __NDK_FPABI_MATH__;
-double	__builtin_yn(int, double) __NDK_FPABI_MATH__;
-
-#if __XSI_VISIBLE <= 500 || __BSD_VISIBLE
-double	__builtin_gamma(double) __NDK_FPABI_MATH__;
+/* This variable can be changed at run-time to any of the values above to
+   affect floating point error handling behavior (it may also be necessary
+   to change the hardware FPU exception settings).  */
+extern _LIB_VERSION_TYPE _LIB_VERSION;
 #endif
 
-#if __XSI_VISIBLE <= 600 || __BSD_VISIBLE
-double	__builtin_scalb(double, double) __NDK_FPABI_MATH__;
-#endif
-#endif /* __BSD_VISIBLE || __XSI_VISIBLE */
 
-#if __BSD_VISIBLE || __ISO_C_VISIBLE >= 1999
-double	__builtin_copysign(double, double) __NDK_FPABI_MATH__ __pure2;
-double	__builtin_fdim(double, double) __NDK_FPABI_MATH__;
-double	__builtin_fmax(double, double) __NDK_FPABI_MATH__ __pure2;
-double	__builtin_fmin(double, double) __NDK_FPABI_MATH__ __pure2;
-double	__builtin_nearbyint(double) __NDK_FPABI_MATH__;
-double	__builtin_round(double) __NDK_FPABI_MATH__;
-double	__builtin_scalbln(double, long) __NDK_FPABI_MATH__;
-double	__builtin_scalbn(double, int) __NDK_FPABI_MATH__;
-double	__builtin_tgamma(double) __NDK_FPABI_MATH__;
-double	__builtin_trunc(double) __NDK_FPABI_MATH__;
-#endif
+#ifdef __USE_SVID
+/* In SVID error handling, `matherr' is called with this description
+   of the exceptional condition.
 
-/*
- * BSD math library entry points
- */
-#if __BSD_VISIBLE
-double	__builtin_drem(double, double) __NDK_FPABI_MATH__;
-int	__builtin_finite(double) __NDK_FPABI_MATH__ __pure2;
-int	__builtin_isnanf(float) __NDK_FPABI_MATH__ __pure2;
-long double significandl(long double) __NDK_FPABI_MATH__;
+   We have a problem when using C++ since `exception' is a reserved
+   name in C++.  */
+# ifdef __cplusplus
+struct __exception
+# else
+struct exception
+# endif
+  {
+    int type;
+    char *name;
+    double arg1;
+    double arg2;
+    double retval;
+  };
 
-/*
- * Reentrant version of gamma & lgamma; passes signgam back by reference
- * as the second argument; user must allocate space for signgam.
- */
-double	__builtin_gamma_r(double, int *) __NDK_FPABI_MATH__;
-double	__builtin_lgamma_r(double, int *) __NDK_FPABI_MATH__;
+# ifdef __cplusplus
+extern int matherr (struct __exception *__exc) throw ();
+# else
+extern int matherr (struct exception *__exc);
+# endif
 
-/*
- * IEEE Test Vector
- */
-double	__builtin_significand(double) __NDK_FPABI_MATH__;
-#endif /* __BSD_VISIBLE */
+# define X_TLOSS	1.41484755040568800000e+16
 
-/* float versions of ANSI/POSIX functions */
-#if __ISO_C_VISIBLE >= 1999
-float	__builtin_acosf(float) __NDK_FPABI_MATH__;
-float	__builtin_asinf(float) __NDK_FPABI_MATH__;
-float	__builtin_atanf(float) __NDK_FPABI_MATH__;
-float	__builtin_atan2f(float, float) __NDK_FPABI_MATH__;
-float	__builtin_cosf(float) __NDK_FPABI_MATH__;
-float	__builtin_sinf(float) __NDK_FPABI_MATH__;
-float	__builtin_tanf(float) __NDK_FPABI_MATH__;
+/* Types of exceptions in the `type' field.  */
+# define DOMAIN		1
+# define SING		2
+# define OVERFLOW	3
+# define UNDERFLOW	4
+# define TLOSS		5
+# define PLOSS		6
 
-float	__builtin_coshf(float) __NDK_FPABI_MATH__;
-float	__builtin_sinhf(float) __NDK_FPABI_MATH__;
-float	__builtin_tanhf(float) __NDK_FPABI_MATH__;
+/* SVID mode specifies returning this large value instead of infinity.  */
+# define HUGE		3.40282347e+38F
 
-float	__builtin_exp2f(float) __NDK_FPABI_MATH__;
-float	__builtin_expf(float) __NDK_FPABI_MATH__;
-float	__builtin_expm1f(float) __NDK_FPABI_MATH__;
-float	__builtin_frexpf(float, int *) __NDK_FPABI_MATH__;	/* fundamentally !__pure2 */
-int	__builtin_ilogbf(float) __NDK_FPABI_MATH__ __pure2;
-float	__builtin_ldexpf(float, int) __NDK_FPABI_MATH__;
-float	__builtin_log10f(float) __NDK_FPABI_MATH__;
-float	__builtin_log1pf(float) __NDK_FPABI_MATH__;
-float	__builtin_log2f(float) __NDK_FPABI_MATH__;
-float	__builtin_logf(float) __NDK_FPABI_MATH__;
-float	__builtin_modff(float, float *) __NDK_FPABI_MATH__;	/* fundamentally !__pure2 */
+#else	/* !SVID */
 
-float	__builtin_powf(float, float) __NDK_FPABI_MATH__;
-float	__builtin_sqrtf(float) __NDK_FPABI_MATH__;
+# ifdef __USE_XOPEN
+/* X/Open wants another strange constant.  */
+#  define MAXFLOAT	3.40282347e+38F
+# endif
 
-float	__builtin_ceilf(float) __NDK_FPABI_MATH__;
-float	__builtin_fabsf(float) __NDK_FPABI_MATH__ __pure2;
-float	__builtin_floorf(float) __NDK_FPABI_MATH__;
-float	__builtin_fmodf(float, float) __NDK_FPABI_MATH__;
-float	__builtin_roundf(float) __NDK_FPABI_MATH__;
+#endif	/* SVID */
 
-float	__builtin_erff(float) __NDK_FPABI_MATH__;
-float	__builtin_erfcf(float) __NDK_FPABI_MATH__;
-float	__builtin_hypotf(float, float) __NDK_FPABI_MATH__;
-float	__builtin_lgammaf(float) __NDK_FPABI_MATH__;
-float	__builtin_tgammaf(float) __NDK_FPABI_MATH__;
 
-float	__builtin_acoshf(float) __NDK_FPABI_MATH__;
-float	__builtin_asinhf(float) __NDK_FPABI_MATH__;
-float	__builtin_atanhf(float) __NDK_FPABI_MATH__;
-float	__builtin_cbrtf(float) __NDK_FPABI_MATH__;
-float	__builtin_logbf(float) __NDK_FPABI_MATH__;
-float	__builtin_copysignf(float, float) __NDK_FPABI_MATH__ __pure2;
-long long __builtin_llrintf(float) __NDK_FPABI_MATH__;
-long long __builtin_llroundf(float) __NDK_FPABI_MATH__;
-long	__builtin_lrintf(float) __NDK_FPABI_MATH__;
-long	__builtin_lroundf(float) __NDK_FPABI_MATH__;
-float	__builtin_nanf(const char *) __NDK_FPABI_MATH__ __pure2;
-float	__builtin_nearbyintf(float) __NDK_FPABI_MATH__;
-float	__builtin_nextafterf(float, float) __NDK_FPABI_MATH__;
-float	__builtin_remainderf(float, float) __NDK_FPABI_MATH__;
-float	__builtin_remquof(float, float, int *) __NDK_FPABI_MATH__;
-float	__builtin_rintf(float) __NDK_FPABI_MATH__;
-float	__builtin_scalblnf(float, long) __NDK_FPABI_MATH__;
-float	__builtin_scalbnf(float, int) __NDK_FPABI_MATH__;
-float	__builtin_truncf(float) __NDK_FPABI_MATH__;
-
-float	__builtin_fdimf(float, float) __NDK_FPABI_MATH__;
-float	__builtin_fmaf(float, float, float) __NDK_FPABI_MATH__;
-float	__builtin_fmaxf(float, float) __NDK_FPABI_MATH__ __pure2;
-float	__builtin_fminf(float, float) __NDK_FPABI_MATH__ __pure2;
+/* Some useful constants.  */
+#if defined __USE_BSD || defined __USE_XOPEN
+# define M_E		2.7182818284590452354	/* e */
+# define M_LOG2E	1.4426950408889634074	/* log_2 e */
+# define M_LOG10E	0.43429448190325182765	/* log_10 e */
+# define M_LN2		0.69314718055994530942	/* log_e 2 */
+# define M_LN10		2.30258509299404568402	/* log_e 10 */
+# define M_PI		3.14159265358979323846	/* pi */
+# define M_PI_2		1.57079632679489661923	/* pi/2 */
+# define M_PI_4		0.78539816339744830962	/* pi/4 */
+# define M_1_PI		0.31830988618379067154	/* 1/pi */
+# define M_2_PI		0.63661977236758134308	/* 2/pi */
+# define M_2_SQRTPI	1.12837916709551257390	/* 2/sqrt(pi) */
+# define M_SQRT2	1.41421356237309504880	/* sqrt(2) */
+# define M_SQRT1_2	0.70710678118654752440	/* 1/sqrt(2) */
 #endif
 
-/*
- * float versions of BSD math library entry points
- */
-#if __BSD_VISIBLE
-float	__builtin_dremf(float, float) __NDK_FPABI_MATH__;
-int	__builtin_finitef(float) __NDK_FPABI_MATH__ __pure2;
-float	__builtin_gammaf(float) __NDK_FPABI_MATH__;
-float	__builtin_j0f(float) __NDK_FPABI_MATH__;
-float	__builtin_j1f(float) __NDK_FPABI_MATH__;
-float	__builtin_jnf(int, float) __NDK_FPABI_MATH__;
-float	__builtin_scalbf(float, float) __NDK_FPABI_MATH__;
-float	__builtin_y0f(float) __NDK_FPABI_MATH__;
-float	__builtin_y1f(float) __NDK_FPABI_MATH__;
-float	__builtin_ynf(int, float) __NDK_FPABI_MATH__;
+/* The above constants are not adequate for computation using `long double's.
+   Therefore we provide as an extension constants with similar names as a
+   GNU extension.  Provide enough digits for the 128-bit IEEE quad.  */
+#ifdef __USE_GNU
+# define M_El		2.7182818284590452353602874713526625L  /* e */
+# define M_LOG2El	1.4426950408889634073599246810018921L  /* log_2 e */
+# define M_LOG10El	0.4342944819032518276511289189166051L  /* log_10 e */
+# define M_LN2l		0.6931471805599453094172321214581766L  /* log_e 2 */
+# define M_LN10l	2.3025850929940456840179914546843642L  /* log_e 10 */
+# define M_PIl		3.1415926535897932384626433832795029L  /* pi */
+# define M_PI_2l	1.5707963267948966192313216916397514L  /* pi/2 */
+# define M_PI_4l	0.7853981633974483096156608458198757L  /* pi/4 */
+# define M_1_PIl	0.3183098861837906715377675267450287L  /* 1/pi */
+# define M_2_PIl	0.6366197723675813430755350534900574L  /* 2/pi */
+# define M_2_SQRTPIl	1.1283791670955125738961589031215452L  /* 2/sqrt(pi) */
+# define M_SQRT2l	1.4142135623730950488016887242096981L  /* sqrt(2) */
+# define M_SQRT1_2l	0.7071067811865475244008443621048490L  /* 1/sqrt(2) */
+#endif
 
-/*
- * Float versions of reentrant version of gamma & lgamma; passes
- * signgam back by reference as the second argument; user must
- * allocate space for signgam.
- */
-float	__builtin_gammaf_r(float, int *) __NDK_FPABI_MATH__;
-float	__builtin_lgammaf_r(float, int *) __NDK_FPABI_MATH__;
 
-/*
- * float version of IEEE Test Vector
- */
-float	__builtin_significandf(float) __NDK_FPABI_MATH__;
-#endif	/* __BSD_VISIBLE */
+/* When compiling in strict ISO C compatible mode we must not use the
+   inline functions since they, among other things, do not set the
+   `errno' variable correctly.  */
+#if defined __STRICT_ANSI__ && !defined __NO_MATH_INLINES
+# define __NO_MATH_INLINES	1
+#endif
 
-/*
- * long double versions of ISO/POSIX math functions
- */
-#if __ISO_C_VISIBLE >= 1999
-long double	__builtin_acoshl(long double) __NDK_FPABI_MATH__;
-long double	__builtin_acosl(long double) __NDK_FPABI_MATH__;
-long double	__builtin_asinhl(long double) __NDK_FPABI_MATH__;
-long double	__builtin_asinl(long double) __NDK_FPABI_MATH__;
-long double	__builtin_atan2l(long double, long double) __NDK_FPABI_MATH__;
-long double	__builtin_atanhl(long double) __NDK_FPABI_MATH__;
-long double	__builtin_atanl(long double) __NDK_FPABI_MATH__;
-long double	__builtin_cbrtl(long double) __NDK_FPABI_MATH__;
-long double	__builtin_ceill(long double) __NDK_FPABI_MATH__;
-long double	__builtin_copysignl(long double, long double) __NDK_FPABI_MATH__ __pure2;
-long double	__builtin_coshl(long double) __NDK_FPABI_MATH__;
-long double	__builtin_cosl(long double) __NDK_FPABI_MATH__;
-long double	__builtin_erfcl(long double) __NDK_FPABI_MATH__;
-long double	__builtin_erfl(long double) __NDK_FPABI_MATH__;
-long double	__builtin_exp2l(long double) __NDK_FPABI_MATH__;
-long double	__builtin_expl(long double) __NDK_FPABI_MATH__;
-long double	__builtin_expm1l(long double) __NDK_FPABI_MATH__;
-long double	__builtin_fabsl(long double) __NDK_FPABI_MATH__ __pure2;
-long double	__builtin_fdiml(long double, long double) __NDK_FPABI_MATH__;
-long double	__builtin_floorl(long double) __NDK_FPABI_MATH__;
-long double	__builtin_fmal(long double, long double, long double) __NDK_FPABI_MATH__;
-long double	__builtin_fmaxl(long double, long double) __NDK_FPABI_MATH__ __pure2;
-long double	__builtin_fminl(long double, long double) __NDK_FPABI_MATH__ __pure2;
-long double	__builtin_fmodl(long double, long double) __NDK_FPABI_MATH__;
-long double	__builtin_frexpl(long double value, int *) __NDK_FPABI_MATH__; /* fundamentally !__pure2 */
-long double	__builtin_hypotl(long double, long double) __NDK_FPABI_MATH__;
-int		__builtin_ilogbl(long double) __NDK_FPABI_MATH__ __pure2;
-long double	__builtin_ldexpl(long double, int) __NDK_FPABI_MATH__;
-long double	__builtin_lgammal(long double) __NDK_FPABI_MATH__;
-long long	__builtin_llrintl(long double) __NDK_FPABI_MATH__;
-long long	__builtin_llroundl(long double) __NDK_FPABI_MATH__;
-long double	__builtin_log10l(long double) __NDK_FPABI_MATH__;
-long double	__builtin_log1pl(long double) __NDK_FPABI_MATH__;
-long double	__builtin_log2l(long double) __NDK_FPABI_MATH__;
-long double	__builtin_logbl(long double) __NDK_FPABI_MATH__;
-long double	__builtin_logl(long double) __NDK_FPABI_MATH__;
-long		__builtin_lrintl(long double) __NDK_FPABI_MATH__;
-long		__builtin_lroundl(long double) __NDK_FPABI_MATH__;
-long double	__builtin_modfl(long double, long double *) __NDK_FPABI_MATH__; /* fundamentally !__pure2 */
-long double	__builtin_nanl(const char *) __NDK_FPABI_MATH__ __pure2;
-long double	__builtin_nearbyintl(long double) __NDK_FPABI_MATH__;
-long double	__builtin_nextafterl(long double, long double) __NDK_FPABI_MATH__;
-double		__builtin_nexttoward(double, long double) __NDK_FPABI_MATH__;
-float		__builtin_nexttowardf(float, long double) __NDK_FPABI_MATH__;
-long double	__builtin_nexttowardl(long double, long double) __NDK_FPABI_MATH__;
-long double	__builtin_powl(long double, long double) __NDK_FPABI_MATH__;
-long double	__builtin_remainderl(long double, long double) __NDK_FPABI_MATH__;
-long double	__builtin_remquol(long double, long double, int *) __NDK_FPABI_MATH__;
-long double	__builtin_rintl(long double) __NDK_FPABI_MATH__;
-long double	__builtin_roundl(long double) __NDK_FPABI_MATH__;
-long double	__builtin_scalblnl(long double, long) __NDK_FPABI_MATH__;
-long double	__builtin_scalbnl(long double, int) __NDK_FPABI_MATH__;
-long double	__builtin_sinhl(long double) __NDK_FPABI_MATH__;
-long double	__builtin_sinl(long double) __NDK_FPABI_MATH__;
-long double	__builtin_sqrtl(long double) __NDK_FPABI_MATH__;
-long double	__builtin_tanhl(long double) __NDK_FPABI_MATH__;
-long double	__builtin_tanl(long double) __NDK_FPABI_MATH__;
-long double	__builtin_tgammal(long double) __NDK_FPABI_MATH__;
-long double	__builtin_truncl(long double) __NDK_FPABI_MATH__;
+#if defined __USE_ISOC99 && __GNUC_PREREQ(2,97)
+/* ISO C99 defines some macros to compare number while taking care for
+   unordered numbers.  Many FPUs provide special instructions to support
+   these operations.  Generic support in GCC for these as builtins went
+   in before 3.0.0, but not all cpus added their patterns.  We define
+   versions that use the builtins here, and <bits/mathinline.h> will
+   undef/redefine as appropriate for the specific GCC version in use.  */
+# define isgreater(x, y)	__builtin_isgreater(x, y)
+# define isgreaterequal(x, y)	__builtin_isgreaterequal(x, y)
+# define isless(x, y)		__builtin_isless(x, y)
+# define islessequal(x, y)	__builtin_islessequal(x, y)
+# define islessgreater(x, y)	__builtin_islessgreater(x, y)
+# define isunordered(u, v)	__builtin_isunordered(u, v)
+#endif
 
-#endif /* __ISO_C_VISIBLE >= 1999 */
+/* Get machine-dependent inline versions (if there are any).  */
+#ifdef __USE_EXTERN_INLINES
+# include <bits/mathinline.h>
+#endif
 
-#if defined(_GNU_SOURCE)
-void __builtin_sincos(double, double*, double*) __NDK_FPABI_MATH__;
-void __builtin_sincosf(float, float*, float*) __NDK_FPABI_MATH__;
-void __builtin_sincosl(long double, long double*, long double*) __NDK_FPABI_MATH__;
-#endif /* _GNU_SOURCE */
+#ifdef __USE_ISOC99
+/* If we've still got undefined comparison macros, provide defaults.  */
 
-#pragma GCC visibility pop
+/* Return nonzero value if X is greater than Y.  */
+# ifndef isgreater
+#  define isgreater(x, y) \
+  (__extension__							      \
+   ({ __typeof__(x) __x = (x); __typeof__(y) __y = (y);			      \
+      !isunordered (__x, __y) && __x > __y; }))
+# endif
+
+/* Return nonzero value if X is greater than or equal to Y.  */
+# ifndef isgreaterequal
+#  define isgreaterequal(x, y) \
+  (__extension__							      \
+   ({ __typeof__(x) __x = (x); __typeof__(y) __y = (y);			      \
+      !isunordered (__x, __y) && __x >= __y; }))
+# endif
+
+/* Return nonzero value if X is less than Y.  */
+# ifndef isless
+#  define isless(x, y) \
+  (__extension__							      \
+   ({ __typeof__(x) __x = (x); __typeof__(y) __y = (y);			      \
+      !isunordered (__x, __y) && __x < __y; }))
+# endif
+
+/* Return nonzero value if X is less than or equal to Y.  */
+# ifndef islessequal
+#  define islessequal(x, y) \
+  (__extension__							      \
+   ({ __typeof__(x) __x = (x); __typeof__(y) __y = (y);			      \
+      !isunordered (__x, __y) && __x <= __y; }))
+# endif
+
+/* Return nonzero value if either X is less than Y or Y is less than X.  */
+# ifndef islessgreater
+#  define islessgreater(x, y) \
+  (__extension__							      \
+   ({ __typeof__(x) __x = (x); __typeof__(y) __y = (y);			      \
+      !isunordered (__x, __y) && (__x < __y || __y < __x); }))
+# endif
+
+/* Return nonzero value if arguments are unordered.  */
+# ifndef isunordered
+#  define isunordered(u, v) \
+  (__extension__							      \
+   ({ __typeof__(u) __u = (u); __typeof__(v) __v = (v);			      \
+      fpclassify (__u) == FP_NAN || fpclassify (__v) == FP_NAN; }))
+# endif
+
+#endif
+
 __END_DECLS
 
-#endif /* !_MATH_H_ */
+
+#endif /* math.h  */

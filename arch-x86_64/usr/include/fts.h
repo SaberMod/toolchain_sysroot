@@ -1,6 +1,3 @@
-/*	$OpenBSD: fts.h,v 1.12 2009/08/27 16:19:27 millert Exp $	*/
-/*	$NetBSD: fts.h,v 1.5 1994/12/28 01:41:50 mycroft Exp $	*/
-
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -13,7 +10,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the University nor the names of its contributors
+ * 4. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,8 +29,18 @@
  *	@(#)fts.h	8.3 (Berkeley) 8/14/94
  */
 
-#ifndef	_FTS_H_
-#define	_FTS_H_
+#ifndef	_FTS_H
+#define	_FTS_H 1
+
+#include <features.h>
+#include <sys/types.h>
+
+/* The fts interface is incompatible with the LFS interface which
+   transparently uses the 64-bit file access functions.  */
+#ifdef __USE_FILE_OFFSET64
+# error "<fts.h> cannot be used with -D_FILE_OFFSET_BITS==64"
+#endif
+
 
 typedef struct {
 	struct _ftsent *fts_cur;	/* current node */
@@ -42,9 +49,9 @@ typedef struct {
 	dev_t fts_dev;			/* starting device # */
 	char *fts_path;			/* path for this descent */
 	int fts_rfd;			/* fd for root */
-	size_t fts_pathlen;		/* sizeof(path) */
+	int fts_pathlen;		/* sizeof(path) */
 	int fts_nitems;			/* elements in the sort array */
-	int (*fts_compar)();		/* compare function */
+	int (*fts_compar) (const void *, const void *); /* compare fn */
 
 #define	FTS_COMFOLLOW	0x0001		/* follow command line symlinks */
 #define	FTS_LOGICAL	0x0002		/* logical walk */
@@ -53,10 +60,11 @@ typedef struct {
 #define	FTS_PHYSICAL	0x0010		/* physical walk */
 #define	FTS_SEEDOT	0x0020		/* return dot and dot-dot */
 #define	FTS_XDEV	0x0040		/* don't cross devices */
+#define FTS_WHITEOUT	0x0080		/* return whiteout information */
 #define	FTS_OPTIONMASK	0x00ff		/* valid user option mask */
 
-#define	FTS_NAMEONLY	0x1000		/* (private) child names only */
-#define	FTS_STOP	0x2000		/* (private) unrecoverable error */
+#define	FTS_NAMEONLY	0x0100		/* (private) child names only */
+#define	FTS_STOP	0x0200		/* (private) unrecoverable error */
 	int fts_options;		/* fts_open options, global flags */
 } FTS;
 
@@ -70,8 +78,8 @@ typedef struct _ftsent {
 	char *fts_path;			/* root path */
 	int fts_errno;			/* errno for this node */
 	int fts_symfd;			/* fd for symlink */
-	size_t fts_pathlen;		/* strlen(fts_path) */
-	size_t fts_namelen;		/* strlen(fts_name) */
+	u_short fts_pathlen;		/* strlen(fts_path) */
+	u_short fts_namelen;		/* strlen(fts_name) */
 
 	ino_t fts_ino;			/* inode */
 	dev_t fts_dev;			/* device */
@@ -79,7 +87,6 @@ typedef struct _ftsent {
 
 #define	FTS_ROOTPARENTLEVEL	-1
 #define	FTS_ROOTLEVEL		 0
-#define	FTS_MAXLEVEL		 0x7fff
 	short fts_level;		/* depth (-1 to N) */
 
 #define	FTS_D		 1		/* preorder directory */
@@ -95,31 +102,30 @@ typedef struct _ftsent {
 #define	FTS_NSOK	11		/* no stat(2) requested */
 #define	FTS_SL		12		/* symbolic link */
 #define	FTS_SLNONE	13		/* symbolic link without target */
-	unsigned short fts_info;	/* user flags for FTSENT structure */
+#define FTS_W		14		/* whiteout object */
+	u_short fts_info;		/* user flags for FTSENT structure */
 
 #define	FTS_DONTCHDIR	 0x01		/* don't chdir .. to the parent */
 #define	FTS_SYMFOLLOW	 0x02		/* followed a symlink to get here */
-	unsigned short fts_flags;	/* private flags for FTSENT structure */
+	u_short fts_flags;		/* private flags for FTSENT structure */
 
 #define	FTS_AGAIN	 1		/* read node again */
 #define	FTS_FOLLOW	 2		/* follow symbolic link */
 #define	FTS_NOINSTR	 3		/* no instructions */
 #define	FTS_SKIP	 4		/* discard node */
-	unsigned short fts_instr;	/* fts_set() instructions */
+	u_short fts_instr;		/* fts_set() instructions */
 
 	struct stat *fts_statp;		/* stat(2) information */
 	char fts_name[1];		/* file name */
 } FTSENT;
 
-#include <sys/cdefs.h>
-
 __BEGIN_DECLS
-FTSENT	*fts_children(FTS *, int);
-int	 fts_close(FTS *);
-FTS	*fts_open(char * const *, int,
-	    int (*)(const FTSENT **, const FTSENT **));
-FTSENT	*fts_read(FTS *);
-int	 fts_set(FTS *, FTSENT *, int);
+FTSENT	*fts_children (FTS *, int);
+int	 fts_close (FTS *);
+FTS	*fts_open (char * const *, int,
+		   int (*)(const FTSENT **, const FTSENT **));
+FTSENT	*fts_read (FTS *);
+int	 fts_set (FTS *, FTSENT *, int) __THROW;
 __END_DECLS
 
-#endif /* !_FTS_H_ */
+#endif /* fts.h */

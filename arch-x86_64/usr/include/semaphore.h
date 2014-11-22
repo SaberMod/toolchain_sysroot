@@ -1,61 +1,79 @@
-/*
- * Copyright (C) 2008 The Android Open Source Project
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *  * Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- *  * Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
- * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- */
-#ifndef _SEMAPHORE_H
-#define _SEMAPHORE_H
+/* Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+   This file is part of the GNU C Library.
 
-#include <sys/cdefs.h>
+   The GNU C Library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
+
+   The GNU C Library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with the GNU C Library; if not, write to the Free
+   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+   02111-1307 USA.  */
+
+#ifndef _SEMAPHORE_H
+#define _SEMAPHORE_H	1
+
+#include <features.h>
+#include <sys/types.h>
+#ifdef __USE_XOPEN2K
+# define __need_timespec
+# include <time.h>
+#endif
+
+/* Get the definition for sem_t.  */
+#include <bits/semaphore.h>
+
 
 __BEGIN_DECLS
 
-typedef struct {
-  volatile unsigned int count;
-#ifdef __LP64__
-  int __reserved[3];
+/* Initialize semaphore object SEM to VALUE.  If PSHARED then share it
+   with other processes.  */
+extern int sem_init (sem_t *__sem, int __pshared, unsigned int __value)
+     __THROW;
+/* Free resources associated with semaphore object SEM.  */
+extern int sem_destroy (sem_t *__sem) __THROW;
+
+/* Open a named semaphore NAME with open flags OFLAG.  */
+extern sem_t *sem_open (__const char *__name, int __oflag, ...) __THROW;
+
+/* Close descriptor for named semaphore SEM.  */
+extern int sem_close (sem_t *__sem) __THROW;
+
+/* Remove named semaphore NAME.  */
+extern int sem_unlink (__const char *__name) __THROW;
+
+/* Wait for SEM being posted.
+
+   This function is a cancellation point and therefore not marked with
+   __THROW.  */
+extern int sem_wait (sem_t *__sem);
+
+#ifdef __USE_XOPEN2K
+/* Similar to `sem_wait' but wait only until ABSTIME.
+
+   This function is a cancellation point and therefore not marked with
+   __THROW.  */
+extern int sem_timedwait (sem_t *__restrict __sem,
+			  __const struct timespec *__restrict __abstime);
 #endif
-} sem_t;
 
-#define SEM_FAILED NULL
+/* Test whether SEM is posted.  */
+extern int sem_trywait (sem_t *__sem) __THROW;
 
-extern int sem_init(sem_t *sem, int pshared, unsigned int value);
+/* Post SEM.  */
+extern int sem_post (sem_t *__sem) __THROW;
 
-extern int    sem_close(sem_t *);
-extern int    sem_destroy(sem_t *);
-extern int    sem_getvalue(sem_t *, int *);
-extern int    sem_init(sem_t *, int, unsigned int);
-extern sem_t *sem_open(const char *, int, ...);
-extern int    sem_post(sem_t *);
-extern int    sem_trywait(sem_t *);
-extern int    sem_unlink(const char *);
-extern int    sem_wait(sem_t *);
+/* Get current value of SEM and store it in *SVAL.  */
+extern int sem_getvalue (sem_t *__restrict __sem, int *__restrict __sval)
+     __THROW;
 
-struct timespec;
-extern int    sem_timedwait(sem_t *sem, const struct timespec *abs_timeout);
 
 __END_DECLS
 
-#endif /* _SEMAPHORE_H */
+#endif	/* semaphore.h */

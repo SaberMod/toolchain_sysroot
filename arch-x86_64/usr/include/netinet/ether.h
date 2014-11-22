@@ -1,28 +1,54 @@
-/*
- * Copyright (C) 2008 The Android Open Source Project
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *  * Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- *  * Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
- * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- */
-#include <net/if_ether.h>
+/* Functions for storing Ethernet addresses in ASCII and mapping to hostnames.
+   Copyright (C) 1996, 1997, 1999 Free Software Foundation, Inc.
+   This file is part of the GNU C Library.
+
+   The GNU C Library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
+
+   The GNU C Library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with the GNU C Library; if not, write to the Free
+   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+   02111-1307 USA.  */
+
+#ifndef _NETINET_ETHER_H
+#define _NETINET_ETHER_H	1
+
+#include <features.h>
+
+/* Get definition of `struct ether_addr'.  */
+#include <netinet/if_ether.h>
+
+__BEGIN_DECLS
+
+/* Convert 48 bit Ethernet ADDRess to ASCII.  */
+extern char *ether_ntoa (__const struct ether_addr *__addr) __THROW;
+extern char *ether_ntoa_r (__const struct ether_addr *__addr, char *__buf)
+     __THROW;
+
+/* Convert ASCII string S to 48 bit Ethernet address.  */
+extern struct ether_addr *ether_aton (__const char *__asc) __THROW;
+extern struct ether_addr *ether_aton_r (__const char *__asc,
+					struct ether_addr *__addr) __THROW;
+
+/* Map 48 bit Ethernet number ADDR to HOSTNAME.  */
+extern int ether_ntohost (char *__hostname, __const struct ether_addr *__addr)
+     __THROW;
+
+/* Map HOSTNAME to 48 bit Ethernet address.  */
+extern int ether_hostton (__const char *__hostname, struct ether_addr *__addr)
+     __THROW;
+
+/* Scan LINE and set ADDR and HOSTNAME.  */
+extern int ether_line (__const char *__line, struct ether_addr *__addr,
+		       char *__hostname) __THROW;
+
+__END_DECLS
+
+#endif /* netinet/ether.h */

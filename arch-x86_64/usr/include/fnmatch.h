@@ -1,52 +1,72 @@
-/*
- * Copyright (C) 2008 The Android Open Source Project
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *  * Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- *  * Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
- * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- */
-#ifndef _FNMATCH_H
-#define _FNMATCH_H
+/* Copyright (C) 1991-93,96,97,98,99,2001,2004 Free Software Foundation, Inc.
+   This file is part of the GNU C Library.
 
-#include <sys/cdefs.h>
+   The GNU C Library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
 
-__BEGIN_DECLS
+   The GNU C Library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
 
-#define FNM_NOMATCH      1     /* Match failed. */
-#define FNM_NOSYS        2     /* Function not supported (unused). */
+   You should have received a copy of the GNU Lesser General Public
+   License along with the GNU C Library; if not, write to the Free
+   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+   02111-1307 USA.  */
 
-#define FNM_NOESCAPE     0x01        /* Disable backslash escaping. */
-#define FNM_PATHNAME     0x02        /* Slash must be matched by slash. */
-#define FNM_PERIOD       0x04        /* Period must be matched by period. */
-#define FNM_LEADING_DIR  0x08        /* Ignore /<tail> after Imatch. */
-#define FNM_CASEFOLD     0x10        /* Case insensitive search. */
+#ifndef	_FNMATCH_H
+#define	_FNMATCH_H	1
 
-#define FNM_IGNORECASE   FNM_CASEFOLD
-#define FNM_FILE_NAME    FNM_PATHNAME
+#ifdef	__cplusplus
+extern "C" {
+#endif
 
-extern int  fnmatch(const char *pattern, const char *string, int flags);
+#ifndef const
+# if (defined __STDC__ && __STDC__) || defined __cplusplus
+#  define __const	const
+# else
+#  define __const
+# endif
+#endif
 
-__END_DECLS
+/* We #undef these before defining them because some losing systems
+   (HP-UX A.08.07 for example) define these in <unistd.h>.  */
+#undef	FNM_PATHNAME
+#undef	FNM_NOESCAPE
+#undef	FNM_PERIOD
 
-#endif /* _FNMATCH_H */
+/* Bits set in the FLAGS argument to `fnmatch'.  */
+#define	FNM_PATHNAME	(1 << 0) /* No wildcard can ever match `/'.  */
+#define	FNM_NOESCAPE	(1 << 1) /* Backslashes don't quote special chars.  */
+#define	FNM_PERIOD	(1 << 2) /* Leading `.' is matched only explicitly.  */
 
+#if !defined _POSIX_C_SOURCE || _POSIX_C_SOURCE < 2 || defined _GNU_SOURCE
+# define FNM_FILE_NAME	 FNM_PATHNAME	/* Preferred GNU name.  */
+# define FNM_LEADING_DIR (1 << 3)	/* Ignore `/...' after a match.  */
+# define FNM_CASEFOLD	 (1 << 4)	/* Compare without regard to case.  */
+# define FNM_EXTMATCH	 (1 << 5)	/* Use ksh-like extended matching. */
+#endif
+
+/* Value returned by `fnmatch' if STRING does not match PATTERN.  */
+#define	FNM_NOMATCH	1
+
+/* This value is returned if the implementation does not support
+   `fnmatch'.  Since this is not the case here it will never be
+   returned but the conformance test suites still require the symbol
+   to be defined.  */
+#ifdef _XOPEN_SOURCE
+# define FNM_NOSYS	(-1)
+#endif
+
+/* Match NAME against the filename pattern PATTERN,
+   returning zero if it matches, FNM_NOMATCH if not.  */
+extern int fnmatch (__const char *__pattern, __const char *__name,
+		    int __flags);
+
+#ifdef	__cplusplus
+}
+#endif
+
+#endif /* fnmatch.h */

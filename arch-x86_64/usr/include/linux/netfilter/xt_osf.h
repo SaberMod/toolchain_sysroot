@@ -1,113 +1,135 @@
-/****************************************************************************
- ****************************************************************************
- ***
- ***   This header was automatically generated from a Linux kernel header
- ***   of the same name, to make information necessary for userspace to
- ***   call into the kernel available to libc.  It contains only constants,
- ***   structures, and macros generated from the original header, and thus,
- ***   contains no copyrightable information.
- ***
- ***   To edit the content of this header, modify the corresponding
- ***   source file (e.g. under external/kernel-headers/original/) then
- ***   run bionic/libc/kernel/tools/update_all.py
- ***
- ***   Any manual change here will be lost the next time this script will
- ***   be run. You've been warned!
- ***
- ****************************************************************************
- ****************************************************************************/
+/*
+ * Copyright (c) 2003+ Evgeniy Polyakov <johnpol@2ka.mxt.ru>
+ *
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ */
+
 #ifndef _XT_OSF_H
 #define _XT_OSF_H
+
 #include <linux/types.h>
-#define MAXGENRELEN 32
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-#define XT_OSF_GENRE (1<<0)
-#define XT_OSF_TTL (1<<1)
-#define XT_OSF_LOG (1<<2)
-#define XT_OSF_INVERT (1<<3)
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-#define XT_OSF_LOGLEVEL_ALL 0
-#define XT_OSF_LOGLEVEL_FIRST 1
-#define XT_OSF_LOGLEVEL_ALL_KNOWN 2
-#define XT_OSF_TTL_TRUE 0
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-#define XT_OSF_TTL_LESS 1
-#define XT_OSF_TTL_NOCHECK 2
+
+#define MAXGENRELEN		32
+
+#define XT_OSF_GENRE		(1<<0)
+#define	XT_OSF_TTL		(1<<1)
+#define XT_OSF_LOG		(1<<2)
+#define XT_OSF_INVERT		(1<<3)
+
+#define XT_OSF_LOGLEVEL_ALL	0	/* log all matched fingerprints */
+#define XT_OSF_LOGLEVEL_FIRST	1	/* log only the first matced fingerprint */
+#define XT_OSF_LOGLEVEL_ALL_KNOWN	2 /* do not log unknown packets */
+
+#define XT_OSF_TTL_TRUE		0	/* True ip and fingerprint TTL comparison */
+#define XT_OSF_TTL_LESS		1	/* Check if ip TTL is less than fingerprint one */
+#define XT_OSF_TTL_NOCHECK	2	/* Do not compare ip and fingerprint TTL at all */
+
 struct xt_osf_info {
- char genre[MAXGENRELEN];
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- __u32 len;
- __u32 flags;
- __u32 loglevel;
- __u32 ttl;
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+	char			genre[MAXGENRELEN];
+	__u32			len;
+	__u32			flags;
+	__u32			loglevel;
+	__u32			ttl;
 };
+
+/*
+ * Wildcard MSS (kind of).
+ * It is used to implement a state machine for the different wildcard values
+ * of the MSS and window sizes.
+ */
 struct xt_osf_wc {
- __u32 wc;
- __u32 val;
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+	__u32			wc;
+	__u32			val;
 };
+
+/*
+ * This struct represents IANA options
+ * http://www.iana.org/assignments/tcp-parameters
+ */
 struct xt_osf_opt {
- __u16 kind, length;
- struct xt_osf_wc wc;
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+	__u16			kind, length;
+	struct xt_osf_wc	wc;
 };
+
 struct xt_osf_user_finger {
- struct xt_osf_wc wss;
- __u8 ttl, df;
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- __u16 ss, mss;
- __u16 opt_num;
- char genre[MAXGENRELEN];
- char version[MAXGENRELEN];
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- char subtype[MAXGENRELEN];
- struct xt_osf_opt opt[MAX_IPOPTLEN];
+	struct xt_osf_wc	wss;
+
+	__u8			ttl, df;
+	__u16			ss, mss;
+	__u16			opt_num;
+
+	char			genre[MAXGENRELEN];
+	char			version[MAXGENRELEN];
+	char			subtype[MAXGENRELEN];
+
+	/* MAX_IPOPTLEN is maximum if all options are NOPs or EOLs */
+	struct xt_osf_opt	opt[MAX_IPOPTLEN];
 };
+
 struct xt_osf_nlmsg {
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- struct xt_osf_user_finger f;
- struct iphdr ip;
- struct tcphdr tcp;
+	struct xt_osf_user_finger	f;
+	struct iphdr		ip;
+	struct tcphdr		tcp;
 };
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+
+/* Defines for IANA option kinds */
+
 enum iana_options {
- OSFOPT_EOL = 0,
- OSFOPT_NOP,
- OSFOPT_MSS,
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- OSFOPT_WSO,
- OSFOPT_SACKP,
- OSFOPT_SACK,
- OSFOPT_ECHO,
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- OSFOPT_ECHOREPLY,
- OSFOPT_TS,
- OSFOPT_POCP,
- OSFOPT_POSP,
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- OSFOPT_EMPTY = 255,
+	OSFOPT_EOL = 0,		/* End of options */
+	OSFOPT_NOP, 		/* NOP */
+	OSFOPT_MSS, 		/* Maximum segment size */
+	OSFOPT_WSO, 		/* Window scale option */
+	OSFOPT_SACKP,		/* SACK permitted */
+	OSFOPT_SACK,		/* SACK */
+	OSFOPT_ECHO,
+	OSFOPT_ECHOREPLY,
+	OSFOPT_TS,		/* Timestamp option */
+	OSFOPT_POCP,		/* Partial Order Connection Permitted */
+	OSFOPT_POSP,		/* Partial Order Service Profile */
+
+	/* Others are not used in the current OSF */
+	OSFOPT_EMPTY = 255,
 };
+
+/*
+ * Initial window size option state machine: multiple of mss, mtu or
+ * plain numeric value. Can also be made as plain numeric value which
+ * is not a multiple of specified value.
+ */
 enum xt_osf_window_size_options {
- OSF_WSS_PLAIN = 0,
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- OSF_WSS_MSS,
- OSF_WSS_MTU,
- OSF_WSS_MODULO,
- OSF_WSS_MAX,
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+	OSF_WSS_PLAIN	= 0,
+	OSF_WSS_MSS,
+	OSF_WSS_MTU,
+	OSF_WSS_MODULO,
+	OSF_WSS_MAX,
 };
+
+/*
+ * Add/remove fingerprint from the kernel.
+ */
 enum xt_osf_msg_types {
- OSF_MSG_ADD,
- OSF_MSG_REMOVE,
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- OSF_MSG_MAX,
+	OSF_MSG_ADD,
+	OSF_MSG_REMOVE,
+	OSF_MSG_MAX,
 };
+
 enum xt_osf_attr_type {
- OSF_ATTR_UNSPEC,
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- OSF_ATTR_FINGER,
- OSF_ATTR_MAX,
+	OSF_ATTR_UNSPEC,
+	OSF_ATTR_FINGER,
+	OSF_ATTR_MAX,
 };
-#endif
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+
+#endif				/* _XT_OSF_H */

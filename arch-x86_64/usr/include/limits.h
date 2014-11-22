@@ -1,128 +1,154 @@
-/*	$OpenBSD: limits.h,v 1.13 2005/12/31 19:29:38 millert Exp $	*/
-/*	$NetBSD: limits.h,v 1.7 1994/10/26 00:56:00 cgd Exp $	*/
+/* Copyright (C) 1991, 1992, 1996, 1997, 1998, 1999, 2000, 2005
+   Free Software Foundation, Inc.
+   This file is part of the GNU C Library.
+
+   The GNU C Library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
+
+   The GNU C Library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with the GNU C Library; if not, write to the Free
+   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+   02111-1307 USA.  */
 
 /*
- * Copyright (c) 1988 The Regents of the University of California.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the University nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- *
- *	@(#)limits.h	5.9 (Berkeley) 4/3/91
+ *	ISO C99 Standard: 7.10/5.2.4.2.1 Sizes of integer types	<limits.h>
  */
 
-#ifndef _LIMITS_H_
-#define	_LIMITS_H_
+#ifndef _LIBC_LIMITS_H_
+#define _LIBC_LIMITS_H_	1
 
-#include <sys/cdefs.h>
+#include <features.h>
 
-#if __POSIX_VISIBLE
-#define	_POSIX_ARG_MAX		4096
-#define	_POSIX_CHILD_MAX	25
-#define	_POSIX_LINK_MAX		8
-#define	_POSIX_MAX_CANON	255
-#define	_POSIX_MAX_INPUT	255
-#define	_POSIX_NAME_MAX		14
-#define	_POSIX_NGROUPS_MAX	0
-#define	_POSIX_OPEN_MAX		16
-#define	_POSIX_PATH_MAX		256
-#define _POSIX_PIPE_BUF		512
-#define	_POSIX_RE_DUP_MAX	255
-#define _POSIX_SSIZE_MAX	32767
-#define _POSIX_STREAM_MAX	8
-#define _POSIX_SYMLINK_MAX	255
-#define _POSIX_SYMLOOP_MAX	8
-#define _POSIX_TZNAME_MAX	3
 
-#define	_POSIX2_BC_BASE_MAX	99
-#define	_POSIX2_BC_DIM_MAX	2048
-#define	_POSIX2_BC_SCALE_MAX	99
-#define	_POSIX2_BC_STRING_MAX	1000
-#define	_POSIX2_COLL_WEIGHTS_MAX	2
-#define	_POSIX2_EXPR_NEST_MAX	32
-#define	_POSIX2_LINE_MAX	2048
-#define	_POSIX2_RE_DUP_MAX	_POSIX_RE_DUP_MAX
+/* Maximum length of any multibyte character in any locale.
+   We define this value here since the gcc header does not define
+   the correct value.  */
+#define MB_LEN_MAX	16
 
-#if __POSIX_VISIBLE >= 200112
-#define _POSIX_TTY_NAME_MAX	9	/* includes trailing NUL */
-#define _POSIX_LOGIN_NAME_MAX	9	/* includes trailing NUL */
-#endif /* __POSIX_VISIBLE >= 200112 */
-#endif /* __POSIX_VISIBLE */
 
-#if __XPG_VISIBLE
-#define PASS_MAX		128	/* _PASSWORD_LEN from <pwd.h> */
+/* If we are not using GNU CC we have to define all the symbols ourself.
+   Otherwise use gcc's definitions (see below).  */
+#if !defined __GNUC__ || __GNUC__ < 2
 
-#define NL_ARGMAX		9
-#define NL_LANGMAX		14
-#define NL_MSGMAX		32767
-#define NL_NMAX			1
-#define NL_SETMAX		255
-#define NL_TEXTMAX		255
+/* We only protect from multiple inclusion here, because all the other
+   #include's protect themselves, and in GCC 2 we may #include_next through
+   multiple copies of this file before we get to GCC's.  */
+# ifndef _LIMITS_H
+#  define _LIMITS_H	1
 
-#define TMP_MAX                 308915776
-#endif /* __XPG_VISIBLE */
+#include <bits/wordsize.h>
 
-#include <sys/limits.h>
+/* We don't have #include_next.
+   Define ANSI <limits.h> for standard 32-bit words.  */
 
-#if __POSIX_VISIBLE
-#include <sys/syslimits.h>
+/* These assume 8-bit `char's, 16-bit `short int's,
+   and 32-bit `int's and `long int's.  */
+
+/* Number of bits in a `char'.	*/
+#  define CHAR_BIT	8
+
+/* Minimum and maximum values a `signed char' can hold.  */
+#  define SCHAR_MIN	(-128)
+#  define SCHAR_MAX	127
+
+/* Maximum value an `unsigned char' can hold.  (Minimum is 0.)  */
+#  define UCHAR_MAX	255
+
+/* Minimum and maximum values a `char' can hold.  */
+#  ifdef __CHAR_UNSIGNED__
+#   define CHAR_MIN	0
+#   define CHAR_MAX	UCHAR_MAX
+#  else
+#   define CHAR_MIN	SCHAR_MIN
+#   define CHAR_MAX	SCHAR_MAX
+#  endif
+
+/* Minimum and maximum values a `signed short int' can hold.  */
+#  define SHRT_MIN	(-32768)
+#  define SHRT_MAX	32767
+
+/* Maximum value an `unsigned short int' can hold.  (Minimum is 0.)  */
+#  define USHRT_MAX	65535
+
+/* Minimum and maximum values a `signed int' can hold.  */
+#  define INT_MIN	(-INT_MAX - 1)
+#  define INT_MAX	2147483647
+
+/* Maximum value an `unsigned int' can hold.  (Minimum is 0.)  */
+#  define UINT_MAX	4294967295U
+
+/* Minimum and maximum values a `signed long int' can hold.  */
+#  if __WORDSIZE == 64
+#   define LONG_MAX	9223372036854775807L
+#  else
+#   define LONG_MAX	2147483647L
+#  endif
+#  define LONG_MIN	(-LONG_MAX - 1L)
+
+/* Maximum value an `unsigned long int' can hold.  (Minimum is 0.)  */
+#  if __WORDSIZE == 64
+#   define ULONG_MAX	18446744073709551615UL
+#  else
+#   define ULONG_MAX	4294967295UL
+#  endif
+
+#  ifdef __USE_ISOC99
+
+/* Minimum and maximum values a `signed long long int' can hold.  */
+#   define LLONG_MAX	9223372036854775807LL
+#   define LLONG_MIN	(-LLONG_MAX - 1LL)
+
+/* Maximum value an `unsigned long long int' can hold.  (Minimum is 0.)  */
+#   define ULLONG_MAX	18446744073709551615ULL
+
+#  endif /* ISO C99 */
+
+# endif	/* limits.h  */
+#endif	/* GCC 2.  */
+
+#endif	/* !_LIBC_LIMITS_H_ */
+
+ /* Get the compiler's limits.h, which defines almost all the ISO constants.
+
+    We put this #include_next outside the double inclusion check because
+    it should be possible to include this file more than once and still get
+    the definitions from gcc's header.  */
+#if defined __GNUC__ && !defined _GCC_LIMITS_H_
+/* `_GCC_LIMITS_H_' is what GCC's file defines.  */
+# include_next <limits.h>
 #endif
 
-/* GLibc compatibility definitions.
-   Note that these are defined by GCC's <limits.h>
-   only when __GNU_LIBRARY__ is defined, i.e. when
-   targetting GLibc. */
-#ifndef LONG_LONG_MIN
-#define LONG_LONG_MIN  LLONG_MIN
+/* The <limits.h> files in some gcc versions don't define LLONG_MIN,
+   LLONG_MAX, and ULLONG_MAX.  Instead only the values gcc defined for
+   ages are available.  */
+#if defined __USE_ISOC99 && defined __GNUC__
+# ifndef LLONG_MIN
+#  define LLONG_MIN	(-LLONG_MAX-1)
+# endif
+# ifndef LLONG_MAX
+#  define LLONG_MAX	__LONG_LONG_MAX__
+# endif
+# ifndef ULLONG_MAX
+#  define ULLONG_MAX	(LLONG_MAX * 2ULL + 1)
+# endif
 #endif
 
-#ifndef LONG_LONG_MAX
-#define LONG_LONG_MAX  LLONG_MAX
+#ifdef	__USE_POSIX
+/* POSIX adds things to <limits.h>.  */
+# include <bits/posix1_lim.h>
 #endif
 
-#ifndef ULONG_LONG_MAX
-#define ULONG_LONG_MAX  ULLONG_MAX
+#ifdef	__USE_POSIX2
+# include <bits/posix2_lim.h>
 #endif
 
-/* BSD compatibility definitions. */
-#if __BSD_VISIBLE
-#define SIZE_T_MAX ULONG_MAX
-#endif /* __BSD_VISIBLE */
-
-#define SSIZE_MAX LONG_MAX
-
-#define MB_LEN_MAX 4
-
-/* New code should use sysconf(_SC_PAGE_SIZE) instead. */
-#ifndef PAGE_SIZE
-#define PAGE_SIZE 4096
+#ifdef	__USE_XOPEN
+# include <bits/xopen_lim.h>
 #endif
-#ifndef PAGESIZE
-#define  PAGESIZE  PAGE_SIZE
-#endif
-
-/* glibc's PAGE_MASK is the bitwise negation of BSD's! TODO: remove? */
-#define PAGE_MASK (~(PAGE_SIZE - 1))
-
-#endif /* !_LIMITS_H_ */

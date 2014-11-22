@@ -1,138 +1,124 @@
-/****************************************************************************
- ****************************************************************************
- ***
- ***   This header was automatically generated from a Linux kernel header
- ***   of the same name, to make information necessary for userspace to
- ***   call into the kernel available to libc.  It contains only constants,
- ***   structures, and macros generated from the original header, and thus,
- ***   contains no copyrightable information.
- ***
- ***   To edit the content of this header, modify the corresponding
- ***   source file (e.g. under external/kernel-headers/original/) then
- ***   run bionic/libc/kernel/tools/update_all.py
- ***
- ***   Any manual change here will be lost the next time this script will
- ***   be run. You've been warned!
- ***
- ****************************************************************************
- ****************************************************************************/
-#ifndef _UAPI_INET_DIAG_H_
-#define _UAPI_INET_DIAG_H_
+#ifndef _INET_DIAG_H_
+#define _INET_DIAG_H_ 1
+
 #include <linux/types.h>
+
+/* Just some random number */
 #define TCPDIAG_GETSOCK 18
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
 #define DCCPDIAG_GETSOCK 19
+
 #define INET_DIAG_GETSOCK_MAX 24
+
+/* Socket identity */
 struct inet_diag_sockid {
- __be16 idiag_sport;
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- __be16 idiag_dport;
- __be32 idiag_src[4];
- __be32 idiag_dst[4];
- __u32 idiag_if;
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- __u32 idiag_cookie[2];
+	__be16	idiag_sport;
+	__be16	idiag_dport;
+	__be32	idiag_src[4];
+	__be32	idiag_dst[4];
+	__u32	idiag_if;
+	__u32	idiag_cookie[2];
 #define INET_DIAG_NOCOOKIE (~0U)
 };
+
+/* Request structure */
+
 struct inet_diag_req {
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- __u8 idiag_family;
- __u8 idiag_src_len;
- __u8 idiag_dst_len;
- __u8 idiag_ext;
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- struct inet_diag_sockid id;
- __u32 idiag_states;
- __u32 idiag_dbs;
+	__u8	idiag_family;		/* Family of addresses. */
+	__u8	idiag_src_len;
+	__u8	idiag_dst_len;
+	__u8	idiag_ext;		/* Query extended information */
+
+	struct inet_diag_sockid id;
+
+	__u32	idiag_states;		/* States to dump */
+	__u32	idiag_dbs;		/* Tables to dump (NI) */
 };
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-struct inet_diag_req_v2 {
- __u8 sdiag_family;
- __u8 sdiag_protocol;
- __u8 idiag_ext;
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- __u8 pad;
- __u32 idiag_states;
- struct inet_diag_sockid id;
-};
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+
 enum {
- INET_DIAG_REQ_NONE,
- INET_DIAG_REQ_BYTECODE,
+	INET_DIAG_REQ_NONE,
+	INET_DIAG_REQ_BYTECODE,
 };
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+
 #define INET_DIAG_REQ_MAX INET_DIAG_REQ_BYTECODE
+
+/* Bytecode is sequence of 4 byte commands followed by variable arguments.
+ * All the commands identified by "code" are conditional jumps forward:
+ * to offset cc+"yes" or to offset cc+"no". "yes" is supposed to be
+ * length of the command and its arguments.
+ */
+ 
 struct inet_diag_bc_op {
- unsigned char code;
- unsigned char yes;
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- unsigned short no;
+	unsigned char	code;
+	unsigned char	yes;
+	unsigned short	no;
 };
+
 enum {
- INET_DIAG_BC_NOP,
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- INET_DIAG_BC_JMP,
- INET_DIAG_BC_S_GE,
- INET_DIAG_BC_S_LE,
- INET_DIAG_BC_D_GE,
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- INET_DIAG_BC_D_LE,
- INET_DIAG_BC_AUTO,
- INET_DIAG_BC_S_COND,
- INET_DIAG_BC_D_COND,
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+	INET_DIAG_BC_NOP,
+	INET_DIAG_BC_JMP,
+	INET_DIAG_BC_S_GE,
+	INET_DIAG_BC_S_LE,
+	INET_DIAG_BC_D_GE,
+	INET_DIAG_BC_D_LE,
+	INET_DIAG_BC_AUTO,
+	INET_DIAG_BC_S_COND,
+	INET_DIAG_BC_D_COND,
 };
+
 struct inet_diag_hostcond {
- __u8 family;
- __u8 prefix_len;
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- int port;
- __be32 addr[0];
+	__u8	family;
+	__u8	prefix_len;
+	int	port;
+	__be32	addr[0];
 };
+
+/* Base info structure. It contains socket identity (addrs/ports/cookie)
+ * and, alas, the information shown by netstat. */
 struct inet_diag_msg {
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- __u8 idiag_family;
- __u8 idiag_state;
- __u8 idiag_timer;
- __u8 idiag_retrans;
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- struct inet_diag_sockid id;
- __u32 idiag_expires;
- __u32 idiag_rqueue;
- __u32 idiag_wqueue;
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- __u32 idiag_uid;
- __u32 idiag_inode;
+	__u8	idiag_family;
+	__u8	idiag_state;
+	__u8	idiag_timer;
+	__u8	idiag_retrans;
+
+	struct inet_diag_sockid id;
+
+	__u32	idiag_expires;
+	__u32	idiag_rqueue;
+	__u32	idiag_wqueue;
+	__u32	idiag_uid;
+	__u32	idiag_inode;
 };
+
+/* Extensions */
+
 enum {
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- INET_DIAG_NONE,
- INET_DIAG_MEMINFO,
- INET_DIAG_INFO,
- INET_DIAG_VEGASINFO,
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- INET_DIAG_CONG,
- INET_DIAG_TOS,
- INET_DIAG_TCLASS,
- INET_DIAG_SKMEMINFO,
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- INET_DIAG_SHUTDOWN,
+	INET_DIAG_NONE,
+	INET_DIAG_MEMINFO,
+	INET_DIAG_INFO,
+	INET_DIAG_VEGASINFO,
+	INET_DIAG_CONG,
 };
-#define INET_DIAG_MAX INET_DIAG_SHUTDOWN
+
+#define INET_DIAG_MAX INET_DIAG_CONG
+
+
+/* INET_DIAG_MEM */
+
 struct inet_diag_meminfo {
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- __u32 idiag_rmem;
- __u32 idiag_wmem;
- __u32 idiag_fmem;
- __u32 idiag_tmem;
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+	__u32	idiag_rmem;
+	__u32	idiag_wmem;
+	__u32	idiag_fmem;
+	__u32	idiag_tmem;
 };
+
+/* INET_DIAG_VEGASINFO */
+
 struct tcpvegas_info {
- __u32 tcpv_enabled;
- __u32 tcpv_rttcnt;
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- __u32 tcpv_rtt;
- __u32 tcpv_minrtt;
+	__u32	tcpv_enabled;
+	__u32	tcpv_rttcnt;
+	__u32	tcpv_rtt;
+	__u32	tcpv_minrtt;
 };
-#endif
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+
+
+#endif /* _INET_DIAG_H_ */

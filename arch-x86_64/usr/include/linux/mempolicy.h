@@ -1,61 +1,56 @@
-/****************************************************************************
- ****************************************************************************
- ***
- ***   This header was automatically generated from a Linux kernel header
- ***   of the same name, to make information necessary for userspace to
- ***   call into the kernel available to libc.  It contains only constants,
- ***   structures, and macros generated from the original header, and thus,
- ***   contains no copyrightable information.
- ***
- ***   To edit the content of this header, modify the corresponding
- ***   source file (e.g. under external/kernel-headers/original/) then
- ***   run bionic/libc/kernel/tools/update_all.py
- ***
- ***   Any manual change here will be lost the next time this script will
- ***   be run. You've been warned!
- ***
- ****************************************************************************
- ****************************************************************************/
-#ifndef _UAPI_LINUX_MEMPOLICY_H
-#define _UAPI_LINUX_MEMPOLICY_H
+#ifndef _LINUX_MEMPOLICY_H
+#define _LINUX_MEMPOLICY_H 1
+
 #include <linux/errno.h>
+
+/*
+ * NUMA memory policies for Linux.
+ * Copyright 2003,2004 Andi Kleen SuSE Labs
+ */
+
+/*
+ * Both the MPOL_* mempolicy mode and the MPOL_F_* optional mode flags are
+ * passed by the user to either set_mempolicy() or mbind() in an 'int' actual.
+ * The MPOL_MODE_FLAGS macro determines the legal set of optional mode flags.
+ */
+
+/* Policies */
 enum {
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- MPOL_DEFAULT,
- MPOL_PREFERRED,
- MPOL_BIND,
- MPOL_INTERLEAVE,
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- MPOL_LOCAL,
- MPOL_MAX,
+	MPOL_DEFAULT,
+	MPOL_PREFERRED,
+	MPOL_BIND,
+	MPOL_INTERLEAVE,
+	MPOL_MAX,	/* always last member of enum */
 };
-enum mpol_rebind_step {
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- MPOL_REBIND_ONCE,
- MPOL_REBIND_STEP1,
- MPOL_REBIND_STEP2,
- MPOL_REBIND_NSTEP,
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-};
-#define MPOL_F_STATIC_NODES (1 << 15)
-#define MPOL_F_RELATIVE_NODES (1 << 14)
-#define MPOL_MODE_FLAGS (MPOL_F_STATIC_NODES | MPOL_F_RELATIVE_NODES)
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-#define MPOL_F_NODE (1<<0)
-#define MPOL_F_ADDR (1<<1)
-#define MPOL_F_MEMS_ALLOWED (1<<2)
-#define MPOL_MF_STRICT (1<<0)
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-#define MPOL_MF_MOVE (1<<1)
-#define MPOL_MF_MOVE_ALL (1<<2)
-#define MPOL_MF_LAZY (1<<3)
-#define MPOL_MF_INTERNAL (1<<4)
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-#define MPOL_MF_VALID (MPOL_MF_STRICT |   MPOL_MF_MOVE |   MPOL_MF_MOVE_ALL)
-#define MPOL_F_SHARED (1 << 0)
-#define MPOL_F_LOCAL (1 << 1)
-#define MPOL_F_REBINDING (1 << 2)
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-#define MPOL_F_MOF (1 << 3)
-#define MPOL_F_MORON (1 << 4)
+
+/* Flags for set_mempolicy */
+#define MPOL_F_STATIC_NODES	(1 << 15)
+#define MPOL_F_RELATIVE_NODES	(1 << 14)
+
+/*
+ * MPOL_MODE_FLAGS is the union of all possible optional mode flags passed to
+ * either set_mempolicy() or mbind().
+ */
+#define MPOL_MODE_FLAGS	(MPOL_F_STATIC_NODES | MPOL_F_RELATIVE_NODES)
+
+/* Flags for get_mempolicy */
+#define MPOL_F_NODE	(1<<0)	/* return next IL mode instead of node mask */
+#define MPOL_F_ADDR	(1<<1)	/* look up vma using address */
+#define MPOL_F_MEMS_ALLOWED (1<<2) /* return allowed memories */
+
+/* Flags for mbind */
+#define MPOL_MF_STRICT	(1<<0)	/* Verify existing pages in the mapping */
+#define MPOL_MF_MOVE	(1<<1)	/* Move pages owned by this process to conform to mapping */
+#define MPOL_MF_MOVE_ALL (1<<2)	/* Move every page to conform to mapping */
+#define MPOL_MF_INTERNAL (1<<3)	/* Internal flags start here */
+
+/*
+ * Internal flags that share the struct mempolicy flags word with
+ * "mode flags".  These flags are allocated from bit 0 up, as they
+ * are never OR'ed into the mode in mempolicy API arguments.
+ */
+#define MPOL_F_SHARED  (1 << 0)	/* identify shared policies */
+#define MPOL_F_LOCAL   (1 << 1)	/* preferred local allocation */
+
+
 #endif

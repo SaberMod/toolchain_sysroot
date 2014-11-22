@@ -1,41 +1,31 @@
-/****************************************************************************
- ****************************************************************************
- ***
- ***   This header was automatically generated from a Linux kernel header
- ***   of the same name, to make information necessary for userspace to
- ***   call into the kernel available to libc.  It contains only constants,
- ***   structures, and macros generated from the original header, and thus,
- ***   contains no copyrightable information.
- ***
- ***   To edit the content of this header, modify the corresponding
- ***   source file (e.g. under external/kernel-headers/original/) then
- ***   run bionic/libc/kernel/tools/update_all.py
- ***
- ***   Any manual change here will be lost the next time this script will
- ***   be run. You've been warned!
- ***
- ****************************************************************************
- ****************************************************************************/
+/* Header file for iptables ipt_ECN target
+ *
+ * (C) 2002 by Harald Welte <laforge@gnumonks.org>
+ *
+ * This software is distributed under GNU GPL v2, 1991
+ * 
+ * ipt_ECN.h,v 1.3 2002/05/29 12:17:40 laforge Exp
+*/
 #ifndef _IPT_ECN_TARGET_H
 #define _IPT_ECN_TARGET_H
-#include <linux/types.h>
 #include <linux/netfilter/xt_DSCP.h>
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-#define IPT_ECN_IP_MASK (~XT_DSCP_MASK)
-#define IPT_ECN_OP_SET_IP 0x01
-#define IPT_ECN_OP_SET_ECE 0x10
-#define IPT_ECN_OP_SET_CWR 0x20
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-#define IPT_ECN_OP_MASK 0xce
+
+#define IPT_ECN_IP_MASK	(~XT_DSCP_MASK)
+
+#define IPT_ECN_OP_SET_IP	0x01	/* set ECN bits of IPv4 header */
+#define IPT_ECN_OP_SET_ECE	0x10	/* set ECE bit of TCP header */
+#define IPT_ECN_OP_SET_CWR	0x20	/* set CWR bit of TCP header */
+
+#define IPT_ECN_OP_MASK		0xce
+
 struct ipt_ECN_info {
- __u8 operation;
- __u8 ip_ect;
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- union {
- struct {
- __u8 ece:1, cwr:1;
- } tcp;
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- } proto;
+	u_int8_t operation;	/* bitset of operations */
+	u_int8_t ip_ect;	/* ECT codepoint of IPv4 header, pre-shifted */
+	union {
+		struct {
+			u_int8_t ece:1, cwr:1; /* TCP ECT bits */
+		} tcp;
+	} proto;
 };
-#endif
+
+#endif /* _IPT_ECN_TARGET_H */

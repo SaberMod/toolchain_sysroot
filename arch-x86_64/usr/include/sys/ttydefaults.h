@@ -1,5 +1,3 @@
-/*	$NetBSD: ttydefaults.h,v 1.16 2008/05/24 14:06:39 yamt Exp $	*/
-
 /*-
  * Copyright (c) 1982, 1986, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -17,7 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the University nor the names of its contributors
+ * 4. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,7 +35,7 @@
  */
 
 /*
- * System wide defaults for terminal state.
+ * System wide defaults for terminal state.  Linux version.
  */
 #ifndef _SYS_TTYDEFAULTS_H_
 #define	_SYS_TTYDEFAULTS_H_
@@ -45,10 +43,10 @@
 /*
  * Defaults on "first" open.
  */
-#define	TTYDEF_IFLAG	(BRKINT | ICRNL | IMAXBEL | IXON | IXANY)
-#define TTYDEF_OFLAG	(OPOST | ONLCR | OXTABS)
+#define	TTYDEF_IFLAG	(BRKINT | ISTRIP | ICRNL | IMAXBEL | IXON | IXANY)
+#define TTYDEF_OFLAG	(OPOST | ONLCR | XTABS)
 #define TTYDEF_LFLAG	(ECHO | ICANON | ISIG | IEXTEN | ECHOE|ECHOKE|ECHOCTL)
-#define TTYDEF_CFLAG	(CREAD | CS8 | HUPCL)
+#define TTYDEF_CFLAG	(CREAD | CS7 | PARENB | HUPCL)
 #define TTYDEF_SPEED	(B9600)
 
 /*
@@ -56,10 +54,18 @@
  */
 #define CTRL(x)	(x&037)
 #define	CEOF		CTRL('d')
-#define	CEOL		((unsigned char)'\377')	/* XXX avoid _POSIX_VDISABLE */
+#ifdef _POSIX_VDISABLE
+# define CEOL		_POSIX_VDISABLE
+#else
+# define CEOL		'\0'		/* XXX avoid _POSIX_VDISABLE */
+#endif
 #define	CERASE		0177
 #define	CINTR		CTRL('c')
-#define	CSTATUS		CTRL('t')
+#ifdef _POSIX_VDISABLE
+# define CSTATUS	_POSIX_VDISABLE
+#else
+# define CSTATUS	'\0'		/* XXX avoid _POSIX_VDISABLE */
+#endif
 #define	CKILL		CTRL('u')
 #define	CMIN		1
 #define	CQUIT		034		/* FS, ^\ */
@@ -84,32 +90,11 @@
 /*
  * #define TTYDEFCHARS to include an array of default control characters.
  */
-#ifdef _KERNEL
 #ifdef TTYDEFCHARS
-const cc_t ttydefchars[NCCS] = {
-	[VEOF] = CEOF,
-	[VEOL] = CEOL,
-	[VEOL2] = CEOL,
-	[VERASE] = CERASE,
-	[VWERASE] = CWERASE,
-	[VKILL] = CKILL,
-	[VREPRINT] = CREPRINT,
-	[7] = _POSIX_VDISABLE,	/* spare */
-	[VINTR] = CINTR,
-	[VQUIT] = CQUIT,
-	[VSUSP] = CSUSP,
-	[VDSUSP] = CDSUSP,
-	[VSTART] = CSTART,
-	[VSTOP] = CSTOP,
-	[VLNEXT] = CLNEXT,
-	[VDISCARD] = CDISCARD,
-	[VMIN] = CMIN,
-	[VTIME] = CTIME,
-	[VSTATUS] = CSTATUS,
-	[19] = _POSIX_VDISABLE,	/* spare */
+cc_t	ttydefchars[NCCS] = {
+	CEOF,	CEOL,	CEOL,	CERASE, CWERASE, CKILL, CREPRINT,
+	_POSIX_VDISABLE, CINTR,	CQUIT,	CSUSP,	CDSUSP,	CSTART,	CSTOP,	CLNEXT,
+	CDISCARD, CMIN,	CTIME,  CSTATUS, _POSIX_VDISABLE
 };
 #undef TTYDEFCHARS
-#else
-extern const cc_t ttydefchars[NCCS];
 #endif
-#endif /* _KERNEL */

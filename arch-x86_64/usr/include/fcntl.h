@@ -1,139 +1,210 @@
+/* Copyright (C) 1991,1992,1994-2001,2003,2004,2005,2006,2007, 2009
+	Free Software Foundation, Inc.
+   This file is part of the GNU C Library.
+
+   The GNU C Library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
+
+   The GNU C Library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with the GNU C Library; if not, write to the Free
+   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+   02111-1307 USA.  */
+
 /*
- * Copyright (C) 2008 The Android Open Source Project
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *  * Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- *  * Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
- * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ *	POSIX Standard: 6.5 File Control Operations	<fcntl.h>
  */
 
-#ifndef _FCNTL_H
-#define _FCNTL_H
+#ifndef	_FCNTL_H
+#define	_FCNTL_H	1
 
-#include <sys/cdefs.h>
-#include <sys/types.h>
-#include <linux/fadvise.h>
-#include <linux/fcntl.h>
-#include <linux/uio.h>
-#include <unistd.h>  /* this is not required, but makes client code much happier */
+#include <features.h>
 
+/* This must be early so <bits/fcntl.h> can define types winningly.  */
 __BEGIN_DECLS
 
-#ifdef __LP64__
-/* LP64 kernels don't have flock64 because their flock is 64-bit. */
-struct flock64 {
-  short l_type;
-  short l_whence;
-  off64_t l_start;
-  off64_t l_len;
-  pid_t l_pid;
-};
-#define F_GETLK64  F_GETLK
-#define F_SETLK64  F_SETLK
-#define F_SETLKW64 F_SETLKW
+/* Get the definitions of O_*, F_*, FD_*: all the
+   numbers and flag bits for `open', `fcntl', et al.  */
+#include <bits/fcntl.h>
+
+/* For XPG all symbols from <sys/stat.h> should also be available.  */
+#ifdef __USE_XOPEN
+# include <sys/stat.h>
 #endif
 
-#define O_ASYNC FASYNC
+#ifdef	__USE_MISC
+# ifndef R_OK			/* Verbatim from <unistd.h>.  Ugh.  */
+/* Values for the second argument to access.
+   These may be OR'd together.  */
+#  define R_OK	4		/* Test for read permission.  */
+#  define W_OK	2		/* Test for write permission.  */
+#  define X_OK	1		/* Test for execute permission.  */
+#  define F_OK	0		/* Test for existence.  */
+# endif
+#endif /* Use misc.  */
 
-#define SPLICE_F_MOVE 1
-#define SPLICE_F_NONBLOCK 2
-#define SPLICE_F_MORE 4
-#define SPLICE_F_GIFT 8
+/* XPG wants the following symbols.  */
+#ifdef __USE_XOPEN		/* <stdio.h> has the same definitions.  */
+# define SEEK_SET	0	/* Seek from beginning of file.  */
+# define SEEK_CUR	1	/* Seek from current position.  */
+# define SEEK_END	2	/* Seek from end of file.  */
+#endif	/* XPG */
 
-#define SYNC_FILE_RANGE_WAIT_BEFORE 1
-#define SYNC_FILE_RANGE_WRITE 2
-#define SYNC_FILE_RANGE_WAIT_AFTER 4
+/* Do the file control operation described by CMD on FD.
+   The remaining arguments are interpreted depending on CMD.
 
-extern int creat(const char*, mode_t);
-extern int creat64(const char*, mode_t);
-extern int fallocate64(int, int, off64_t, off64_t);
-extern int fallocate(int, int, off_t, off_t);
-extern int fcntl(int, int, ...);
-extern int openat(int, const char*, int, ...);
-extern int openat64(int, const char*, int, ...);
-extern int open(const char*, int, ...);
-extern int open64(const char*, int, ...);
-extern int posix_fadvise64(int, off64_t, off64_t, int);
-extern int posix_fadvise(int, off_t, off_t, int);
-extern int posix_fallocate64(int, off64_t, off64_t);
-extern int posix_fallocate(int, off_t, off_t);
-extern ssize_t splice(int, off64_t*, int, off64_t*, size_t, unsigned int);
-extern ssize_t tee(int, int, size_t, unsigned int);
-extern int unlinkat(int, const char*, int);
-extern ssize_t vmsplice(int, const struct iovec*, size_t, unsigned int);
+   This function is a cancellation point and therefore not marked with
+   __THROW.  */
+extern int fcntl (int __fd, int __cmd, ...);
 
-#if defined(__BIONIC_FORTIFY)
+/* Open FILE and return a new file descriptor for it, or -1 on error.
+   OFLAG determines the type of access used.  If O_CREAT is on OFLAG,
+   the third argument is taken as a `mode_t', the mode of the created file.
 
-extern int __open_2(const char*, int);
-extern int __open_real(const char*, int, ...) __asm__(__USER_LABEL_PREFIX__ "open");
-extern int __openat_2(int, const char*, int);
-extern int __openat_real(int, const char*, int, ...) __asm__(__USER_LABEL_PREFIX__ "openat");
-__errordecl(__creat_missing_mode, "called with O_CREAT, but missing mode");
-__errordecl(__creat_too_many_args, "too many arguments");
+   This function is a cancellation point and therefore not marked with
+   __THROW.  */
+#ifndef __USE_FILE_OFFSET64
+extern int open (__const char *__file, int __oflag, ...) __nonnull ((1));
+#else
+# ifdef __REDIRECT
+extern int __REDIRECT (open, (__const char *__file, int __oflag, ...), open64)
+     __nonnull ((1));
+# else
+#  define open open64
+# endif
+#endif
+#ifdef __USE_LARGEFILE64
+extern int open64 (__const char *__file, int __oflag, ...) __nonnull ((1));
+#endif
 
-#if !defined(__clang__)
+#ifdef __USE_ATFILE
+/* Similar to `open' but a relative path name is interpreted relative to
+   the directory for which FD is a descriptor.
 
-__BIONIC_FORTIFY_INLINE
-int open(const char* pathname, int flags, ...) {
-    if (__builtin_constant_p(flags)) {
-        if ((flags & O_CREAT) && __builtin_va_arg_pack_len() == 0) {
-            __creat_missing_mode();  // compile time error
-        }
-    }
+   NOTE: some other `openat' implementation support additional functionality
+   through this interface, especially using the O_XATTR flag.  This is not
+   yet supported here.
 
-    if (__builtin_va_arg_pack_len() > 1) {
-        __creat_too_many_args();  // compile time error
-    }
+   This function is a cancellation point and therefore not marked with
+   __THROW.  */
+# ifndef __USE_FILE_OFFSET64
+extern int openat (int __fd, __const char *__file, int __oflag, ...)
+     __nonnull ((2));
+# else
+#  ifdef __REDIRECT
+extern int __REDIRECT (openat, (int __fd, __const char *__file, int __oflag,
+				...), openat64) __nonnull ((2));
+#  else
+#   define openat openat64
+#  endif
+# endif
 
-    if ((__builtin_va_arg_pack_len() == 0) && !__builtin_constant_p(flags)) {
-        return __open_2(pathname, flags);
-    }
+extern int openat64 (int __fd, __const char *__file, int __oflag, ...)
+     __nonnull ((2));
+#endif
 
-    return __open_real(pathname, flags, __builtin_va_arg_pack());
-}
+/* Create and open FILE, with mode MODE.  This takes an `int' MODE
+   argument because that is what `mode_t' will be widened to.
 
-__BIONIC_FORTIFY_INLINE
-int openat(int dirfd, const char* pathname, int flags, ...) {
-    if (__builtin_constant_p(flags)) {
-        if ((flags & O_CREAT) && __builtin_va_arg_pack_len() == 0) {
-            __creat_missing_mode();  // compile time error
-        }
-    }
+   This function is a cancellation point and therefore not marked with
+   __THROW.  */
+#ifndef __USE_FILE_OFFSET64
+extern int creat (__const char *__file, __mode_t __mode) __nonnull ((1));
+#else
+# ifdef __REDIRECT
+extern int __REDIRECT (creat, (__const char *__file, __mode_t __mode),
+		       creat64) __nonnull ((1));
+# else
+#  define creat creat64
+# endif
+#endif
+#ifdef __USE_LARGEFILE64
+extern int creat64 (__const char *__file, __mode_t __mode) __nonnull ((1));
+#endif
 
-    if (__builtin_va_arg_pack_len() > 1) {
-        __creat_too_many_args();  // compile time error
-    }
+#if !defined F_LOCK && (defined __USE_MISC || (defined __USE_XOPEN_EXTENDED \
+					       && !defined __USE_POSIX))
+/* NOTE: These declarations also appear in <unistd.h>; be sure to keep both
+   files consistent.  Some systems have them there and some here, and some
+   software depends on the macros being defined without including both.  */
 
-    if ((__builtin_va_arg_pack_len() == 0) && !__builtin_constant_p(flags)) {
-        return __openat_2(dirfd, pathname, flags);
-    }
+/* `lockf' is a simpler interface to the locking facilities of `fcntl'.
+   LEN is always relative to the current file position.
+   The CMD argument is one of the following.  */
 
-    return __openat_real(dirfd, pathname, flags, __builtin_va_arg_pack());
-}
+# define F_ULOCK 0	/* Unlock a previously locked region.  */
+# define F_LOCK  1	/* Lock a region for exclusive use.  */
+# define F_TLOCK 2	/* Test and lock a region for exclusive use.  */
+# define F_TEST  3	/* Test a region for other processes locks.  */
 
-#endif /* !defined(__clang__) */
+# ifndef __USE_FILE_OFFSET64
+extern int lockf (int __fd, int __cmd, __off_t __len);
+# else
+#  ifdef __REDIRECT
+extern int __REDIRECT (lockf, (int __fd, int __cmd, __off64_t __len), lockf64);
+#  else
+#   define lockf lockf64
+#  endif
+# endif
+# ifdef __USE_LARGEFILE64
+extern int lockf64 (int __fd, int __cmd, __off64_t __len);
+# endif
+#endif
 
-#endif /* defined(__BIONIC_FORTIFY) */
+#ifdef __USE_XOPEN2K
+/* Advice the system about the expected behaviour of the application with
+   respect to the file associated with FD.  */
+# ifndef __USE_FILE_OFFSET64
+extern int posix_fadvise (int __fd, __off_t __offset, __off_t __len,
+			  int __advise) __THROW;
+# else
+ # ifdef __REDIRECT_NTH
+extern int __REDIRECT_NTH (posix_fadvise, (int __fd, __off64_t __offset,
+					   __off64_t __len, int __advise),
+			   posix_fadvise64);
+#  else
+#   define posix_fadvise posix_fadvise64
+#  endif
+# endif
+# ifdef __USE_LARGEFILE64
+extern int posix_fadvise64 (int __fd, __off64_t __offset, __off64_t __len,
+			    int __advise) __THROW;
+# endif
+
+
+/* Reserve storage for the data of the file associated with FD.
+
+   This function is a possible cancellation points and therefore not
+   marked with __THROW.  */
+# ifndef __USE_FILE_OFFSET64
+extern int posix_fallocate (int __fd, __off_t __offset, __off_t __len);
+# else
+ # ifdef __REDIRECT
+extern int __REDIRECT (posix_fallocate, (int __fd, __off64_t __offset,
+					 __off64_t __len),
+		       posix_fallocate64);
+#  else
+#   define posix_fallocate posix_fallocate64
+#  endif
+# endif
+# ifdef __USE_LARGEFILE64
+extern int posix_fallocate64 (int __fd, __off64_t __offset, __off64_t __len);
+# endif
+#endif
+
+
+/* Define some inlines helping to catch common problems.  */
+#if __USE_FORTIFY_LEVEL > 0 && defined __extern_always_inline \
+    && defined __va_arg_pack_len
+# include <bits/fcntl2.h>
+#endif
 
 __END_DECLS
 
-#endif /* _FCNTL_H */
+#endif /* fcntl.h  */

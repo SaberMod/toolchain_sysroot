@@ -1,107 +1,208 @@
-/*
- * Copyright (C) 2008 The Android Open Source Project
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *  * Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- *  * Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
- * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- */
-#ifndef _LOCALE_H_
-#define _LOCALE_H_
+/* Copyright (C) 1991,1992,1995-2002,2007,2009 Free Software Foundation, Inc.
+   This file is part of the GNU C Library.
 
-#include <sys/cdefs.h>
-#include <xlocale.h>
+   The GNU C Library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
+
+   The GNU C Library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with the GNU C Library; if not, write to the Free
+   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+   02111-1307 USA.  */
+
+/*
+ *	ISO C99 Standard: 7.11 Localization	<locale.h>
+ */
+
+#ifndef	_LOCALE_H
+#define	_LOCALE_H	1
+
+#include <features.h>
+
+#define __need_NULL
+#include <stddef.h>
+#include <bits/locale.h>
 
 __BEGIN_DECLS
 
-#define LC_CTYPE           0
-#define LC_NUMERIC         1
-#define LC_TIME            2
-#define LC_COLLATE         3
-#define LC_MONETARY        4
-#define LC_MESSAGES        5
-#define LC_ALL             6
-#define LC_PAPER           7
-#define LC_NAME            8
-#define LC_ADDRESS         9
-#define LC_TELEPHONE      10
-#define LC_MEASUREMENT    11
-#define LC_IDENTIFICATION 12
+/* These are the possibilities for the first argument to setlocale.
+   The code assumes that the lowest LC_* symbol has the value zero.  */
+#define LC_CTYPE          __LC_CTYPE
+#define LC_NUMERIC        __LC_NUMERIC
+#define LC_TIME           __LC_TIME
+#define LC_COLLATE        __LC_COLLATE
+#define LC_MONETARY       __LC_MONETARY
+#define LC_MESSAGES       __LC_MESSAGES
+#define	LC_ALL		  __LC_ALL
+#define LC_PAPER	  __LC_PAPER
+#define LC_NAME		  __LC_NAME
+#define LC_ADDRESS	  __LC_ADDRESS
+#define LC_TELEPHONE	  __LC_TELEPHONE
+#define LC_MEASUREMENT	  __LC_MEASUREMENT
+#define LC_IDENTIFICATION __LC_IDENTIFICATION
 
-#define LC_CTYPE_MASK          (1 << LC_CTYPE)
-#define LC_NUMERIC_MASK        (1 << LC_NUMERIC)
-#define LC_TIME_MASK           (1 << LC_TIME)
-#define LC_COLLATE_MASK        (1 << LC_COLLATE)
-#define LC_MONETARY_MASK       (1 << LC_MONETARY)
-#define LC_MESSAGES_MASK       (1 << LC_MESSAGES)
-#define LC_PAPER_MASK          (1 << LC_PAPER)
-#define LC_NAME_MASK           (1 << LC_NAME)
-#define LC_ADDRESS_MASK        (1 << LC_ADDRESS)
-#define LC_TELEPHONE_MASK      (1 << LC_TELEPHONE)
-#define LC_MEASUREMENT_MASK    (1 << LC_MEASUREMENT)
-#define LC_IDENTIFICATION_MASK (1 << LC_IDENTIFICATION)
 
-#define LC_ALL_MASK (LC_CTYPE_MASK | LC_NUMERIC_MASK | LC_TIME_MASK | LC_COLLATE_MASK | \
-                     LC_MONETARY_MASK | LC_MESSAGES_MASK | LC_PAPER_MASK | LC_NAME_MASK | \
-                     LC_ADDRESS_MASK | LC_TELEPHONE_MASK | LC_MEASUREMENT_MASK | \
-                     LC_IDENTIFICATION_MASK)
+__BEGIN_NAMESPACE_STD
 
-struct lconv {
-    char* decimal_point;
-    char* thousands_sep;
-    char* grouping;
-    char* int_curr_symbol;
-    char* currency_symbol;
-    char* mon_decimal_point;
-    char* mon_thousands_sep;
-    char* mon_grouping;
-    char* positive_sign;
-    char* negative_sign;
-    char  int_frac_digits;
-    char  frac_digits;
-    char  p_cs_precedes;
-    char  p_sep_by_space;
-    char  n_cs_precedes;
-    char  n_sep_by_space;
-    char  p_sign_posn;
-    char  n_sign_posn;
-    char  int_p_cs_precedes;
-    char  int_p_sep_by_space;
-    char  int_n_cs_precedes;
-    char  int_n_sep_by_space;
-    char  int_p_sign_posn;
-    char  int_n_sign_posn;
+/* Structure giving information about numeric and monetary notation.  */
+struct lconv
+{
+  /* Numeric (non-monetary) information.  */
+
+  char *decimal_point;		/* Decimal point character.  */
+  char *thousands_sep;		/* Thousands separator.  */
+  /* Each element is the number of digits in each group;
+     elements with higher indices are farther left.
+     An element with value CHAR_MAX means that no further grouping is done.
+     An element with value 0 means that the previous element is used
+     for all groups farther left.  */
+  char *grouping;
+
+  /* Monetary information.  */
+
+  /* First three chars are a currency symbol from ISO 4217.
+     Fourth char is the separator.  Fifth char is '\0'.  */
+  char *int_curr_symbol;
+  char *currency_symbol;	/* Local currency symbol.  */
+  char *mon_decimal_point;	/* Decimal point character.  */
+  char *mon_thousands_sep;	/* Thousands separator.  */
+  char *mon_grouping;		/* Like `grouping' element (above).  */
+  char *positive_sign;		/* Sign for positive values.  */
+  char *negative_sign;		/* Sign for negative values.  */
+  char int_frac_digits;		/* Int'l fractional digits.  */
+  char frac_digits;		/* Local fractional digits.  */
+  /* 1 if currency_symbol precedes a positive value, 0 if succeeds.  */
+  char p_cs_precedes;
+  /* 1 iff a space separates currency_symbol from a positive value.  */
+  char p_sep_by_space;
+  /* 1 if currency_symbol precedes a negative value, 0 if succeeds.  */
+  char n_cs_precedes;
+  /* 1 iff a space separates currency_symbol from a negative value.  */
+  char n_sep_by_space;
+  /* Positive and negative sign positions:
+     0 Parentheses surround the quantity and currency_symbol.
+     1 The sign string precedes the quantity and currency_symbol.
+     2 The sign string follows the quantity and currency_symbol.
+     3 The sign string immediately precedes the currency_symbol.
+     4 The sign string immediately follows the currency_symbol.  */
+  char p_sign_posn;
+  char n_sign_posn;
+#ifdef __USE_ISOC99
+  /* 1 if int_curr_symbol precedes a positive value, 0 if succeeds.  */
+  char int_p_cs_precedes;
+  /* 1 iff a space separates int_curr_symbol from a positive value.  */
+  char int_p_sep_by_space;
+  /* 1 if int_curr_symbol precedes a negative value, 0 if succeeds.  */
+  char int_n_cs_precedes;
+  /* 1 iff a space separates int_curr_symbol from a negative value.  */
+  char int_n_sep_by_space;
+  /* Positive and negative sign positions:
+     0 Parentheses surround the quantity and int_curr_symbol.
+     1 The sign string precedes the quantity and int_curr_symbol.
+     2 The sign string follows the quantity and int_curr_symbol.
+     3 The sign string immediately precedes the int_curr_symbol.
+     4 The sign string immediately follows the int_curr_symbol.  */
+  char int_p_sign_posn;
+  char int_n_sign_posn;
+#else
+  char __int_p_cs_precedes;
+  char __int_p_sep_by_space;
+  char __int_n_cs_precedes;
+  char __int_n_sep_by_space;
+  char __int_p_sign_posn;
+  char __int_n_sign_posn;
+#endif
 };
 
-struct lconv* localeconv(void);
 
-locale_t duplocale(locale_t);
-void freelocale(locale_t);
-locale_t newlocale(int, const char*, locale_t);
-char* setlocale(int, const char*);
-locale_t uselocale(locale_t);
+/* Set and/or return the current locale.  */
+extern char *setlocale (int __category, __const char *__locale) __THROW;
 
-#define LC_GLOBAL_LOCALE ((locale_t) -1L)
+/* Return the numeric/monetary information for the current locale.  */
+extern struct lconv *localeconv (void) __THROW;
+
+__END_NAMESPACE_STD
+
+
+#ifdef	__USE_XOPEN2K8
+/* The concept of one static locale per category is not very well
+   thought out.  Many applications will need to process its data using
+   information from several different locales.  Another application is
+   the implementation of the internationalization handling in the
+   upcoming ISO C++ standard library.  To support this another set of
+   the functions using locale data exist which have an additional
+   argument.
+
+   Attention: all these functions are *not* standardized in any form.
+   This is a proof-of-concept implementation.  */
+
+/* Get locale datatype definition.  */
+# include <xlocale.h>
+
+/* Return a reference to a data structure representing a set of locale
+   datasets.  Unlike for the CATEGORY parameter for `setlocale' the
+   CATEGORY_MASK parameter here uses a single bit for each category,
+   made by OR'ing together LC_*_MASK bits above.  */
+extern __locale_t newlocale (int __category_mask, __const char *__locale,
+			     __locale_t __base) __THROW;
+
+/* These are the bits that can be set in the CATEGORY_MASK argument to
+   `newlocale'.  In the GNU implementation, LC_FOO_MASK has the value
+   of (1 << LC_FOO), but this is not a part of the interface that
+   callers can assume will be true.  */
+# define LC_CTYPE_MASK		(1 << __LC_CTYPE)
+# define LC_NUMERIC_MASK	(1 << __LC_NUMERIC)
+# define LC_TIME_MASK		(1 << __LC_TIME)
+# define LC_COLLATE_MASK	(1 << __LC_COLLATE)
+# define LC_MONETARY_MASK	(1 << __LC_MONETARY)
+# define LC_MESSAGES_MASK	(1 << __LC_MESSAGES)
+# define LC_PAPER_MASK		(1 << __LC_PAPER)
+# define LC_NAME_MASK		(1 << __LC_NAME)
+# define LC_ADDRESS_MASK	(1 << __LC_ADDRESS)
+# define LC_TELEPHONE_MASK	(1 << __LC_TELEPHONE)
+# define LC_MEASUREMENT_MASK	(1 << __LC_MEASUREMENT)
+# define LC_IDENTIFICATION_MASK	(1 << __LC_IDENTIFICATION)
+# define LC_ALL_MASK		(LC_CTYPE_MASK \
+				 | LC_NUMERIC_MASK \
+				 | LC_TIME_MASK \
+				 | LC_COLLATE_MASK \
+				 | LC_MONETARY_MASK \
+				 | LC_MESSAGES_MASK \
+				 | LC_PAPER_MASK \
+				 | LC_NAME_MASK \
+				 | LC_ADDRESS_MASK \
+				 | LC_TELEPHONE_MASK \
+				 | LC_MEASUREMENT_MASK \
+				 | LC_IDENTIFICATION_MASK \
+				 )
+
+/* Return a duplicate of the set of locale in DATASET.  All usage
+   counters are increased if necessary.  */
+extern __locale_t duplocale (__locale_t __dataset) __THROW;
+
+/* Free the data associated with a locale dataset previously returned
+   by a call to `setlocale_r'.  */
+extern void freelocale (__locale_t __dataset) __THROW;
+
+/* Switch the current thread's locale to DATASET.
+   If DATASET is null, instead just return the current setting.
+   The special value LC_GLOBAL_LOCALE is the initial setting
+   for all threads and can also be installed any time, meaning
+   the thread uses the global settings controlled by `setlocale'.  */
+extern __locale_t uselocale (__locale_t __dataset) __THROW;
+
+/* This value can be passed to `uselocale' and may be returned by it.
+   Passing this value to any other function has undefined behavior.  */
+# define LC_GLOBAL_LOCALE	((__locale_t) -1L)
+
+#endif
 
 __END_DECLS
 
-#endif /* _LOCALE_H_ */
+#endif /* locale.h  */

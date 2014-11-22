@@ -1,56 +1,98 @@
-/*
- * Copyright (C) 2008 The Android Open Source Project
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *  * Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- *  * Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
- * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- */
-#ifndef _MNTENT_H_
-#define _MNTENT_H_
+/* Utilities for reading/writing fstab, mtab, etc.
+   Copyright (C) 1995, 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+   This file is part of the GNU C Library.
 
+   The GNU C Library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
+
+   The GNU C Library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with the GNU C Library; if not, write to the Free
+   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+   02111-1307 USA.  */
+
+#ifndef	_MNTENT_H
+#define	_MNTENT_H	1
+
+#include <features.h>
+#define __need_FILE
 #include <stdio.h>
-#include <sys/cdefs.h>
-#include <paths.h>  /* for _PATH_MOUNTED */
+#include <paths.h>
 
-#define MOUNTED _PATH_MOUNTED
-#define MNTTYPE_IGNORE "ignore"
 
-struct mntent {
-  char* mnt_fsname;
-  char* mnt_dir;
-  char* mnt_type;
-  char* mnt_opts;
-  int mnt_freq;
-  int mnt_passno;
-};
+/* File listing canonical interesting mount points.  */
+#define	MNTTAB		_PATH_MNTTAB	/* Deprecated alias.  */
+
+/* File listing currently active mount points.  */
+#define	MOUNTED		_PATH_MOUNTED	/* Deprecated alias.  */
+
+
+/* General filesystem types.  */
+#define MNTTYPE_IGNORE	"ignore"	/* Ignore this entry.  */
+#define MNTTYPE_NFS	"nfs"		/* Network file system.  */
+#define MNTTYPE_SWAP	"swap"		/* Swap device.  */
+
+
+/* Generic mount options.  */
+#define MNTOPT_DEFAULTS	"defaults"	/* Use all default options.  */
+#define MNTOPT_RO	"ro"		/* Read only.  */
+#define MNTOPT_RW	"rw"		/* Read/write.  */
+#define MNTOPT_SUID	"suid"		/* Set uid allowed.  */
+#define MNTOPT_NOSUID	"nosuid"	/* No set uid allowed.  */
+#define MNTOPT_NOAUTO	"noauto"	/* Do not auto mount.  */
+
 
 __BEGIN_DECLS
 
-int endmntent(FILE*);
-struct mntent* getmntent(FILE*);
-struct mntent* getmntent_r(FILE*, struct mntent*, char*, int);
-FILE* setmntent(const char*, const char*);
+/* Structure describing a mount table entry.  */
+struct mntent
+  {
+    char *mnt_fsname;		/* Device or server for filesystem.  */
+    char *mnt_dir;		/* Directory mounted on.  */
+    char *mnt_type;		/* Type of filesystem: ufs, nfs, etc.  */
+    char *mnt_opts;		/* Comma-separated options for fs.  */
+    int mnt_freq;		/* Dump frequency (in days).  */
+    int mnt_passno;		/* Pass number for `fsck'.  */
+  };
+
+
+/* Prepare to begin reading and/or writing mount table entries from the
+   beginning of FILE.  MODE is as for `fopen'.  */
+extern FILE *setmntent (__const char *__file, __const char *__mode) __THROW;
+
+/* Read one mount table entry from STREAM.  Returns a pointer to storage
+   reused on the next call, or null for EOF or error (use feof/ferror to
+   check).  */
+extern struct mntent *getmntent (FILE *__stream) __THROW;
+
+#ifdef __USE_MISC
+/* Reentrant version of the above function.  */
+extern struct mntent *getmntent_r (FILE *__restrict __stream,
+				   struct mntent *__restrict __result,
+				   char *__restrict __buffer,
+				   int __bufsize) __THROW;
+#endif
+
+/* Write the mount table entry described by MNT to STREAM.
+   Return zero on success, nonzero on failure.  */
+extern int addmntent (FILE *__restrict __stream,
+		      __const struct mntent *__restrict __mnt) __THROW;
+
+/* Close a stream opened with `setmntent'.  */
+extern int endmntent (FILE *__stream) __THROW;
+
+/* Search MNT->mnt_opts for an option matching OPT.
+   Returns the address of the substring, or null if none found.  */
+extern char *hasmntopt (__const struct mntent *__mnt,
+			__const char *__opt) __THROW;
+
 
 __END_DECLS
 
-#endif
+#endif	/* mntent.h */

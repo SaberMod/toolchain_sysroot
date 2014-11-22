@@ -1,73 +1,205 @@
-/*	$OpenBSD: grp.h,v 1.8 2005/12/13 00:35:22 millert Exp $	*/
-/*	$NetBSD: grp.h,v 1.7 1995/04/29 05:30:40 cgd Exp $	*/
+/* Copyright (C) 1991,1992,1995-2001,2003,2004 Free Software Foundation, Inc.
+   This file is part of the GNU C Library.
 
-/*-
- * Copyright (c) 1989, 1993
- *	The Regents of the University of California.  All rights reserved.
- * (c) UNIX System Laboratories, Inc.
- * All or some portions of this file are derived from material licensed
- * to the University of California by American Telephone and Telegraph
- * Co. or Unix System Laboratories, Inc. and are reproduced herein with
- * the permission of UNIX System Laboratories, Inc.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the University nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- *
- *	@(#)grp.h	8.2 (Berkeley) 1/21/94
+   The GNU C Library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
+
+   The GNU C Library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with the GNU C Library; if not, write to the Free
+   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+   02111-1307 USA.  */
+
+/*
+ *	POSIX Standard: 9.2.1 Group Database Access	<grp.h>
  */
 
-#ifndef _GRP_H_
-#define	_GRP_H_
+#ifndef	_GRP_H
+#define	_GRP_H	1
 
-#include <sys/cdefs.h>
-#include <sys/types.h>
-
-struct group {
-	char	*gr_name;		/* group name */
-	char	*gr_passwd;		/* group password */
-	gid_t	gr_gid;			/* group id */
-	char	**gr_mem;		/* group members */
-};
+#include <features.h>
 
 __BEGIN_DECLS
-struct group	*getgrgid(gid_t);
-struct group	*getgrnam(const char *);
-#if __POSIX_VISIBLE >= 200112 || __XPG_VISIBLE
-struct group	*getgrent(void);
-void		 setgrent(void);
-void		 endgrent(void);
-int		 getgrgid_r(gid_t, struct group *, char *,
-		    size_t, struct group **);
-int		 getgrnam_r(const char *, struct group *, char *,
-		    size_t, struct group **);
+
+#include <bits/types.h>
+
+#define __need_size_t
+#include <stddef.h>
+
+
+/* For the Single Unix specification we must define this type here.  */
+#if (defined __USE_XOPEN || defined __USE_XOPEN2K) && !defined __gid_t_defined
+typedef __gid_t gid_t;
+# define __gid_t_defined
 #endif
 
-int   getgrouplist (const char *user, gid_t group,
-                  gid_t *groups, int *ngroups);
+/* The group structure.	 */
+struct group
+  {
+    char *gr_name;		/* Group name.	*/
+    char *gr_passwd;		/* Password.	*/
+    __gid_t gr_gid;		/* Group ID.	*/
+    char **gr_mem;		/* Member list.	*/
+  };
 
-int   initgroups (const char *user, gid_t group);
+
+#if defined __USE_SVID || defined __USE_GNU
+# define __need_FILE
+# include <stdio.h>
+#endif
+
+
+#if defined __USE_SVID || defined __USE_BSD || defined __USE_XOPEN_EXTENDED
+/* Rewind the group-file stream.
+
+   This function is a possible cancellation point and therefore not
+   marked with __THROW.  */
+extern void setgrent (void);
+
+/* Close the group-file stream.
+
+   This function is a possible cancellation point and therefore not
+   marked with __THROW.  */
+extern void endgrent (void);
+
+/* Read an entry from the group-file stream, opening it if necessary.
+
+   This function is a possible cancellation point and therefore not
+   marked with __THROW.  */
+extern struct group *getgrent (void);
+#endif
+
+#ifdef	__USE_SVID
+/* Read a group entry from STREAM.
+
+   This function is not part of POSIX and therefore no official
+   cancellation point.  But due to similarity with an POSIX interface
+   or due to the implementation it is a cancellation point and
+   therefore not marked with __THROW.  */
+extern struct group *fgetgrent (FILE *__stream);
+#endif
+
+#ifdef __USE_GNU
+/* Write the given entry onto the given stream.
+
+   This function is not part of POSIX and therefore no official
+   cancellation point.  But due to similarity with an POSIX interface
+   or due to the implementation it is a cancellation point and
+   therefore not marked with __THROW.  */
+extern int putgrent (__const struct group *__restrict __p,
+		     FILE *__restrict __f);
+#endif
+
+/* Search for an entry with a matching group ID.
+
+   This function is a possible cancellation point and therefore not
+   marked with __THROW.  */
+extern struct group *getgrgid (__gid_t __gid);
+
+/* Search for an entry with a matching group name.
+
+   This function is a possible cancellation point and therefore not
+   marked with __THROW.  */
+extern struct group *getgrnam (__const char *__name);
+
+#if defined __USE_POSIX || defined __USE_MISC
+
+# ifdef __USE_MISC
+/* Reasonable value for the buffer sized used in the reentrant
+   functions below.  But better use `sysconf'.  */
+#  define NSS_BUFLEN_GROUP	1024
+# endif
+
+/* Reentrant versions of some of the functions above.
+
+   PLEASE NOTE: the `getgrent_r' function is not (yet) standardized.
+   The interface may change in later versions of this library.  But
+   the interface is designed following the principals used for the
+   other reentrant functions so the chances are good this is what the
+   POSIX people would choose.
+
+   This function is not part of POSIX and therefore no official
+   cancellation point.  But due to similarity with an POSIX interface
+   or due to the implementation it is a cancellation point and
+   therefore not marked with __THROW.  */
+
+# ifdef __USE_GNU
+extern int getgrent_r (struct group *__restrict __resultbuf,
+		       char *__restrict __buffer, size_t __buflen,
+		       struct group **__restrict __result);
+# endif
+
+/* Search for an entry with a matching group ID.
+
+   This function is a possible cancellation point and therefore not
+   marked with __THROW.  */
+extern int getgrgid_r (__gid_t __gid, struct group *__restrict __resultbuf,
+		       char *__restrict __buffer, size_t __buflen,
+		       struct group **__restrict __result);
+
+/* Search for an entry with a matching group name.
+
+   This function is a possible cancellation point and therefore not
+   marked with __THROW.  */
+extern int getgrnam_r (__const char *__restrict __name,
+		       struct group *__restrict __resultbuf,
+		       char *__restrict __buffer, size_t __buflen,
+		       struct group **__restrict __result);
+
+# ifdef	__USE_SVID
+/* Read a group entry from STREAM.  This function is not standardized
+   an probably never will.
+
+   This function is not part of POSIX and therefore no official
+   cancellation point.  But due to similarity with an POSIX interface
+   or due to the implementation it is a cancellation point and
+   therefore not marked with __THROW.  */
+extern int fgetgrent_r (FILE *__restrict __stream,
+			struct group *__restrict __resultbuf,
+			char *__restrict __buffer, size_t __buflen,
+			struct group **__restrict __result);
+# endif
+
+#endif	/* POSIX or reentrant */
+
+
+#ifdef	__USE_BSD
+
+# define __need_size_t
+# include <stddef.h>
+
+/* Set the group set for the current user to GROUPS (N of them).  */
+extern int setgroups (size_t __n, __const __gid_t *__groups) __THROW;
+
+/* Store at most *NGROUPS members of the group set for USER into
+   *GROUPS.  Also include GROUP.  The actual number of groups found is
+   returned in *NGROUPS.  Return -1 if the if *NGROUPS is too small.
+
+   This function is not part of POSIX and therefore no official
+   cancellation point.  But due to similarity with an POSIX interface
+   or due to the implementation it is a cancellation point and
+   therefore not marked with __THROW.  */
+extern int getgrouplist (__const char *__user, __gid_t __group,
+			 __gid_t *__groups, int *__ngroups);
+
+/* Initialize the group set for the current user
+   by reading the group database and using all groups
+   of which USER is a member.  Also include GROUP.
+
+   This function is not part of POSIX and therefore no official
+   cancellation point.  But due to similarity with an POSIX interface
+   or due to the implementation it is a cancellation point and
+   therefore not marked with __THROW.  */
+extern int initgroups (__const char *__user, __gid_t __group);
+
+#endif /* Use BSD.  */
 
 __END_DECLS
 
-#endif /* !_GRP_H_ */
+#endif /* grp.h  */

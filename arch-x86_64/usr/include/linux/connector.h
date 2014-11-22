@@ -1,64 +1,73 @@
-/****************************************************************************
- ****************************************************************************
- ***
- ***   This header was automatically generated from a Linux kernel header
- ***   of the same name, to make information necessary for userspace to
- ***   call into the kernel available to libc.  It contains only constants,
- ***   structures, and macros generated from the original header, and thus,
- ***   contains no copyrightable information.
- ***
- ***   To edit the content of this header, modify the corresponding
- ***   source file (e.g. under external/kernel-headers/original/) then
- ***   run bionic/libc/kernel/tools/update_all.py
- ***
- ***   Any manual change here will be lost the next time this script will
- ***   be run. You've been warned!
- ***
- ****************************************************************************
- ****************************************************************************/
-#ifndef _UAPI__CONNECTOR_H
-#define _UAPI__CONNECTOR_H
+/*
+ * 	connector.h
+ * 
+ * 2004-2005 Copyright (c) Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+ * All rights reserved.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+#ifndef __CONNECTOR_H
+#define __CONNECTOR_H
+
 #include <linux/types.h>
-#define CN_IDX_PROC 0x1
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-#define CN_VAL_PROC 0x1
-#define CN_IDX_CIFS 0x2
-#define CN_VAL_CIFS 0x1
-#define CN_W1_IDX 0x3
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-#define CN_W1_VAL 0x1
-#define CN_IDX_V86D 0x4
-#define CN_VAL_V86D_UVESAFB 0x1
-#define CN_IDX_BB 0x5
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-#define CN_DST_IDX 0x6
-#define CN_DST_VAL 0x1
-#define CN_IDX_DM 0x7
-#define CN_VAL_DM_USERSPACE_LOG 0x1
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-#define CN_IDX_DRBD 0x8
-#define CN_VAL_DRBD 0x1
-#define CN_KVP_IDX 0x9
-#define CN_KVP_VAL 0x1
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-#define CN_VSS_IDX 0xA
-#define CN_VSS_VAL 0x1
-#define CN_NETLINK_USERS 11
-#define CONNECTOR_MAX_MSG_SIZE 16384
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+
+/*
+ * Process Events connector unique ids -- used for message routing
+ */
+#define CN_IDX_PROC			0x1
+#define CN_VAL_PROC			0x1
+#define CN_IDX_CIFS			0x2
+#define CN_VAL_CIFS                     0x1
+#define CN_W1_IDX			0x3	/* w1 communication */
+#define CN_W1_VAL			0x1
+#define CN_IDX_V86D			0x4
+#define CN_VAL_V86D_UVESAFB		0x1
+#define CN_IDX_BB			0x5	/* BlackBoard, from the TSP GPL sampling framework */
+#define CN_DST_IDX			0x6
+#define CN_DST_VAL			0x1
+#define CN_IDX_DM			0x7	/* Device Mapper */
+#define CN_VAL_DM_USERSPACE_LOG		0x1
+
+#define CN_NETLINK_USERS		8
+
+/*
+ * Maximum connector's message size.
+ */
+#define CONNECTOR_MAX_MSG_SIZE		16384
+
+/*
+ * idx and val are unique identifiers which 
+ * are used for message routing and 
+ * must be registered in connector.h for in-kernel usage.
+ */
+
 struct cb_id {
- __u32 idx;
- __u32 val;
+	__u32 idx;
+	__u32 val;
 };
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
+
 struct cn_msg {
- struct cb_id id;
- __u32 seq;
- __u32 ack;
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
- __u16 len;
- __u16 flags;
- __u8 data[0];
+	struct cb_id id;
+
+	__u32 seq;
+	__u32 ack;
+
+	__u16 len;		/* Length of the following data */
+	__u16 flags;
+	__u8 data[0];
 };
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-#endif
+
+#endif				/* __CONNECTOR_H */

@@ -1,60 +1,45 @@
-/****************************************************************************
- ****************************************************************************
- ***
- ***   This header was automatically generated from a Linux kernel header
- ***   of the same name, to make information necessary for userspace to
- ***   call into the kernel available to libc.  It contains only constants,
- ***   structures, and macros generated from the original header, and thus,
- ***   contains no copyrightable information.
- ***
- ***   To edit the content of this header, modify the corresponding
- ***   source file (e.g. under external/kernel-headers/original/) then
- ***   run bionic/libc/kernel/tools/update_all.py
- ***
- ***   Any manual change here will be lost the next time this script will
- ***   be run. You've been warned!
- ***
- ****************************************************************************
- ****************************************************************************/
-#ifndef _UAPI_LINUX_SCHED_H
-#define _UAPI_LINUX_SCHED_H
-#define CSIGNAL 0x000000ff
-#define CLONE_VM 0x00000100
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-#define CLONE_FS 0x00000200
-#define CLONE_FILES 0x00000400
-#define CLONE_SIGHAND 0x00000800
-#define CLONE_PTRACE 0x00002000
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-#define CLONE_VFORK 0x00004000
-#define CLONE_PARENT 0x00008000
-#define CLONE_THREAD 0x00010000
-#define CLONE_NEWNS 0x00020000
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-#define CLONE_SYSVSEM 0x00040000
-#define CLONE_SETTLS 0x00080000
-#define CLONE_PARENT_SETTID 0x00100000
-#define CLONE_CHILD_CLEARTID 0x00200000
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-#define CLONE_DETACHED 0x00400000
-#define CLONE_UNTRACED 0x00800000
-#define CLONE_CHILD_SETTID 0x01000000
-#define CLONE_NEWUTS 0x04000000
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-#define CLONE_NEWIPC 0x08000000
-#define CLONE_NEWUSER 0x10000000
-#define CLONE_NEWPID 0x20000000
-#define CLONE_NEWNET 0x40000000
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-#define CLONE_IO 0x80000000
-#define SCHED_NORMAL 0
-#define SCHED_FIFO 1
-#define SCHED_RR 2
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-#define SCHED_BATCH 3
-#define SCHED_IDLE 5
-#define SCHED_DEADLINE 6
-#define SCHED_RESET_ON_FORK 0x40000000
-/* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
-#define SCHED_FLAG_RESET_ON_FORK 0x01
+#ifndef _LINUX_SCHED_H
+#define _LINUX_SCHED_H
+
+/*
+ * cloning flags:
+ */
+#define CSIGNAL		0x000000ff	/* signal mask to be sent at exit */
+#define CLONE_VM	0x00000100	/* set if VM shared between processes */
+#define CLONE_FS	0x00000200	/* set if fs info shared between processes */
+#define CLONE_FILES	0x00000400	/* set if open files shared between processes */
+#define CLONE_SIGHAND	0x00000800	/* set if signal handlers and blocked signals shared */
+#define CLONE_PTRACE	0x00002000	/* set if we want to let tracing continue on the child too */
+#define CLONE_VFORK	0x00004000	/* set if the parent wants the child to wake it up on mm_release */
+#define CLONE_PARENT	0x00008000	/* set if we want to have the same parent as the cloner */
+#define CLONE_THREAD	0x00010000	/* Same thread group? */
+#define CLONE_NEWNS	0x00020000	/* New namespace group? */
+#define CLONE_SYSVSEM	0x00040000	/* share system V SEM_UNDO semantics */
+#define CLONE_SETTLS	0x00080000	/* create a new TLS for the child */
+#define CLONE_PARENT_SETTID	0x00100000	/* set the TID in the parent */
+#define CLONE_CHILD_CLEARTID	0x00200000	/* clear the TID in the child */
+#define CLONE_DETACHED		0x00400000	/* Unused, ignored */
+#define CLONE_UNTRACED		0x00800000	/* set if the tracing process can't force CLONE_PTRACE on this clone */
+#define CLONE_CHILD_SETTID	0x01000000	/* set the TID in the child */
+#define CLONE_STOPPED		0x02000000	/* Start in stopped state */
+#define CLONE_NEWUTS		0x04000000	/* New utsname group? */
+#define CLONE_NEWIPC		0x08000000	/* New ipcs */
+#define CLONE_NEWUSER		0x10000000	/* New user namespace */
+#define CLONE_NEWPID		0x20000000	/* New pid namespace */
+#define CLONE_NEWNET		0x40000000	/* New network namespace */
+#define CLONE_IO		0x80000000	/* Clone io context */
+
+/*
+ * Scheduling policies
+ */
+#define SCHED_NORMAL		0
+#define SCHED_FIFO		1
+#define SCHED_RR		2
+#define SCHED_BATCH		3
+/* SCHED_ISO: reserved but not implemented yet */
+#define SCHED_IDLE		5
+/* Can be ORed in to make sure the process is reverted back to SCHED_NORMAL on fork */
+#define SCHED_RESET_ON_FORK     0x40000000
+
+
 #endif

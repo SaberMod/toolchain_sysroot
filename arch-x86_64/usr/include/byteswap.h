@@ -1,38 +1,40 @@
-/*
- * Copyright (C) 2008 The Android Open Source Project
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *  * Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- *  * Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
- * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- */
-#ifndef _BYTESWAP_H_
-#define _BYTESWAP_H_
+/* Copyright (C) 1997 Free Software Foundation, Inc.
+   This file is part of the GNU C Library.
 
-/* endian.h rather than sys/endian.h so we get the machine-specific file. */
-#include <endian.h>
+   The GNU C Library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
 
-#define  bswap_16(x)   swap16(x)
-#define  bswap_32(x)   swap32(x)
-#define  bswap_64(x)   swap64(x)
+   The GNU C Library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
 
-#endif /* _BYTESWAP_H_ */
+   You should have received a copy of the GNU Lesser General Public
+   License along with the GNU C Library; if not, write to the Free
+   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+   02111-1307 USA.  */
+
+#ifndef _BYTESWAP_H
+#define _BYTESWAP_H	1
+
+/* Get the machine specific, optimized definitions.  */
+#include <bits/byteswap.h>
+
+
+/* The following definitions must all be macros since otherwise some
+   of the possible optimizations are not possible.  */
+
+/* Return a value with all bytes in the 16 bit argument swapped.  */
+#define bswap_16(x) __bswap_16 (x)
+
+/* Return a value with all bytes in the 32 bit argument swapped.  */
+#define bswap_32(x) __bswap_32 (x)
+
+#if defined __GNUC__ && __GNUC__ >= 2
+/* Return a value with all bytes in the 64 bit argument swapped.  */
+# define bswap_64(x) __bswap_64 (x)
+#endif
+
+#endif /* byteswap.h */
