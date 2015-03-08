@@ -1,4 +1,4 @@
 toolchain_sysroot
 =================
 
-Clone of AOSP sysroot
+Modified AOSP sysroot
